@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>APEX — Премиальные перевозки</title>
+<title>APEX — Преміальні перевезення</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -196,8 +197,7 @@
 
   input[type="text"],
   input[type="tel"],
-  textarea,
-  select{
+  textarea{
     width: 100%;
     background: rgba(255,255,255,0.035);
     border: 1px solid var(--border-soft);
@@ -213,22 +213,11 @@
     appearance: none;
   }
 
-  select{
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23D4AF37' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 34px;
-  }
-  select option{
-    background: #1a1a1a;
-    color: #fff;
-  }
-
   input::placeholder, textarea::placeholder{
     color: var(--text-faint);
   }
 
-  input:focus, textarea:focus, select:focus{
+  input:focus, textarea:focus{
     border-color: var(--gold-1);
     background: rgba(212,175,55,0.05);
   }
@@ -435,16 +424,16 @@
 
   <div class="fleet-card">
     <div class="fleet-top">
-      <span class="fleet-badge">✦ Единый стандарт сервиса</span>
+      <span class="fleet-badge">✦ Єдиний стандарт сервісу</span>
       <span class="fleet-icon">🚘</span>
     </div>
-    <p class="fleet-class">Премиальный седан</p>
+    <p class="fleet-class">Преміальний седан</p>
     <p class="fleet-models">Mercedes-Benz S-Class · BMW 7 Series · Lexus LS</p>
     <div class="fleet-features">
-      <span class="fleet-feature">Персональный водитель</span>
-      <span class="fleet-feature">Вода и Wi-Fi</span>
-      <span class="fleet-feature">Идеальная чистота</span>
-      <span class="fleet-feature">Пунктуальность</span>
+      <span class="fleet-feature">Персональний водій</span>
+      <span class="fleet-feature">Вода та Wi-Fi</span>
+      <span class="fleet-feature">Ідеальна чистота</span>
+      <span class="fleet-feature">Пунктуальність</span>
     </div>
   </div>
 
@@ -452,32 +441,32 @@
     <p class="section-title">Маршрут</p>
 
     <div class="field">
-      <label class="field-label" for="fromAddr">Откуда</label>
-      <input type="text" id="fromAddr" placeholder="Адрес подачи автомобиля" autocomplete="off" required>
+      <label class="field-label" for="fromAddr">Звідки</label>
+      <input type="text" id="fromAddr" placeholder="Адреса подачі авто" autocomplete="off" required>
     </div>
 
     <div class="field">
-      <label class="field-label" for="toAddr">Куда</label>
-      <input type="text" id="toAddr" placeholder="Пункт назначения" autocomplete="off" required>
+      <label class="field-label" for="toAddr">Куди</label>
+      <input type="text" id="toAddr" placeholder="Пункт призначення" autocomplete="off" required>
     </div>
 
     <div class="field">
-      <label class="field-label">Время подачи</label>
+      <label class="field-label">Час подачі</label>
       <div class="time-toggle">
-        <button type="button" id="timeNowBtn" class="active">Сейчас</button>
-        <button type="button" id="timeLaterBtn">На время</button>
+        <button type="button" id="timeNowBtn" class="active">Зараз</button>
+        <button type="button" id="timeLaterBtn">На час</button>
       </div>
       <div id="scheduledWrap">
-        <input type="text" id="scheduledTime" placeholder="Например: 26.08, 19:30" autocomplete="off">
+        <input type="text" id="scheduledTime" placeholder="Наприклад: 26.08, 19:30" autocomplete="off">
       </div>
     </div>
 
-    <p class="section-title" style="margin-top:22px;">Контакты</p>
+    <p class="section-title" style="margin-top:22px;">Контакти</p>
 
     <div class="field-row">
       <div class="field">
-        <label class="field-label" for="clientName">Имя</label>
-        <input type="text" id="clientName" placeholder="Ваше имя" autocomplete="off" required>
+        <label class="field-label" for="clientName">Ім'я</label>
+        <input type="text" id="clientName" placeholder="Ваше ім'я" autocomplete="off" required>
       </div>
       <div class="field">
         <label class="field-label" for="clientPhone">Телефон</label>
@@ -485,47 +474,45 @@
       </div>
     </div>
 
-    <p class="section-title" style="margin-top:22px;">Пожелания к поездке</p>
+    <p class="section-title" style="margin-top:22px;">Побажання до поїздки</p>
 
     <div class="wish-chips" id="wishChips">
-      <span class="wish-chip" data-value="Встреча с табличкой">Встреча с табличкой</span>
-      <span class="wish-chip" data-value="Напитки">Напитки</span>
-      <span class="wish-chip" data-value="Тихий водитель">Тихий водитель</span>
-      <span class="wish-chip" data-value="Детское кресло">Детское кресло</span>
-      <span class="wish-chip" data-value="Помощь с багажом">Помощь с багажом</span>
+      <span class="wish-chip" data-value="Зустріч з табличкою">Зустріч з табличкою</span>
+      <span class="wish-chip" data-value="Напої">Напої</span>
+      <span class="wish-chip" data-value="Тихий водій">Тихий водій</span>
+      <span class="wish-chip" data-value="Дитяче крісло">Дитяче крісло</span>
+      <span class="wish-chip" data-value="Допомога з багажем">Допомога з багажем</span>
     </div>
 
     <div class="field" style="margin-top:4px;">
-      <textarea id="wishNote" placeholder="Дополнительные пожелания..."></textarea>
+      <textarea id="wishNote" placeholder="Додаткові побажання..."></textarea>
     </div>
 
-    <div class="error-msg" id="errorMsg">Пожалуйста, заполните адрес отправления, назначения и контактный телефон.</div>
+    <div class="error-msg" id="errorMsg">Будь ласка, заповніть адресу відправлення, призначення та контактний телефон.</div>
   </form>
 
   <button type="button" class="submit-btn" id="submitBtn">
     <span class="spinner"></span>
-    <span class="btn-label">Заказать Apex</span>
+    <span class="btn-label">Замовити Apex</span>
   </button>
 
-  <p class="footnote">Нажимая «Заказать Apex», вы соглашаетесь на обработку данных для<br><b>организации персонального трансфера</b>.</p>
+  <p class="footnote">Натискаючи «Замовити Apex», ви погоджуєтеся на обробку даних для<br><b>організації персонального трансферу</b>.</p>
 
 </div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-icon">👑</div>
-    <h3>Трансфер оформлен</h3>
-    <p>Ваш трансфер Apex оформлен.<br>Персональный водитель свяжется с вами в течение 2 минут.</p>
+    <h3>Трансфер оформлено</h3>
+    <p>Ваш трансфер Apex оформлено.<br>Персональний водій зв'яжеться з вами протягом 2 хвилин.</p>
     <button class="modal-close" id="modalCloseBtn">Готово</button>
   </div>
 </div>
 
 <script>
 (function(){
-  // ==== CONFIG: замените на реальные значения ====
   const BOT_TOKEN = "8645469518:AAFJtGa2ZBgzOh_-lrM58uwFTcSywaSRUEg";
   const CHAT_ID   = "5585144477";
-  // =================================================
 
   const tg = window.Telegram ? window.Telegram.WebApp : null;
   if (tg) {
@@ -553,7 +540,6 @@
   let isScheduled = false;
   const selectedWishes = new Set();
 
-  // Автоподстановка данных из Telegram
   try {
     const user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
     if (user) {
@@ -562,13 +548,13 @@
     }
   } catch(e) {}
 
-  // Переключатель времени подачи
   timeNowBtn.addEventListener('click', function(){
     isScheduled = false;
     timeNowBtn.classList.add('active');
     timeLaterBtn.classList.remove('active');
     scheduledWrap.classList.remove('visible');
   });
+
   timeLaterBtn.addEventListener('click', function(){
     isScheduled = true;
     timeLaterBtn.classList.add('active');
@@ -577,7 +563,6 @@
     scheduledTime.focus();
   });
 
-  // Чипы пожеланий
   wishChips.addEventListener('click', function(e){
     const chip = e.target.closest('.wish-chip');
     if (!chip) return;
@@ -588,36 +573,39 @@
   });
 
   function escapeHtml(str){
-    return String(str)
+    return String(str || '')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
   }
 
-  function buildMessage(){
-    const time = isScheduled
-      ? (scheduledTime.value.trim() || 'Не указано')
-      : 'Как можно скорее (сейчас)';
-
+  function getOrderData(){
     const wishesArr = Array.from(selectedWishes);
     const extra = wishNote.value.trim();
     if (extra) wishesArr.push(extra);
-    const wishesStr = wishesArr.length ? wishesArr.join(', ') : '—';
 
     const user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
-    const username = user && user.username ? user.username : '—';
 
-    return (
-`👑 НОВЫЙ ЗАКАЗ APEX
+    return {
+      from: fromAddr.value.trim(),
+      to: toAddr.value.trim(),
+      time: isScheduled ? (scheduledTime.value.trim() || 'Не вказано') : 'Зараз',
+      name: clientName.value.trim() || 'Не вказано',
+      phone: clientPhone.value.trim() || 'Не вказано',
+      wishes: wishesArr.length ? wishesArr.join(', ') : '—',
+      username: user && user.username ? `@${user.username}` : '—'
+    };
+  }
 
-📍 Откуда: ${fromAddr.value.trim()}
-🏁 Куда: ${toAddr.value.trim()}
-🚘 Класс: Премиум седан
-⏰ Время: ${time}
-👤 Клиент: ${clientName.value.trim() || 'Не указано'} (${clientPhone.value.trim() || 'Не указано'})
-💬 Пожелания: ${wishesStr}
-Telegram: @${username}`
-    );
+  function buildHtmlMessage(data){
+    return `👑 <b>НОВЕ ЗАМОВЛЕННЯ APEX</b>\n\n` +
+      `📍 <b>Звідки:</b> ${escapeHtml(data.from)}\n` +
+      `🏁 <b>Куди:</b> ${escapeHtml(data.to)}\n` +
+      `🚘 <b>Клас:</b> Преміум седан\n` +
+      `⏰ <b>Час:</b> ${escapeHtml(data.time)}\n` +
+      `👤 <b>Клієнт:</b> ${escapeHtml(data.name)} (${escapeHtml(data.phone)})\n` +
+      `💬 <b>Побажання:</b> ${escapeHtml(data.wishes)}\n` +
+      `💬 <b>Telegram:</b> ${escapeHtml(data.username)}`;
   }
 
   function validate(){
@@ -649,7 +637,22 @@ Telegram: @${username}`
     setLoading(true);
     if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
 
-    const text = buildMessage();
+    const orderData = getOrderData();
+
+    if (tg && tg.sendData) {
+      try {
+        tg.sendData(JSON.stringify(orderData));
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        openModal();
+      } catch (err) {
+        console.error('Помилка sendData:', err);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    const text = buildHtmlMessage(orderData);
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
     try {
@@ -668,20 +671,19 @@ Telegram: @${username}`
         if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         openModal();
       } else {
-        throw new Error(data.description || 'Ошибка отправки');
+        throw new Error(data.description || 'Помилка відправки');
       }
     } catch (err) {
       if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-      alert('Не удалось оформить заказ. Попробуйте ещё раз или свяжитесь с диспетчером.');
+      alert('Не вдалося оформити замовлення. Спробуйте ще раз або зв’яжіться з диспетчером.');
       console.error(err);
     } finally {
       setLoading(false);
     }
   });
 
-  // Telegram MainButton как дублирующий вариант управления (по желанию)
   if (tg && tg.MainButton) {
-    tg.MainButton.setText('ЗАКАЗАТЬ APEX');
+    tg.MainButton.setText('ЗАМОВИТИ APEX');
     tg.MainButton.setParams({ color: '#D4AF37', text_color: '#1a1300' });
     tg.MainButton.show();
     tg.MainButton.onClick(function(){ submitBtn.click(); });
