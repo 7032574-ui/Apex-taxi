@@ -24,6 +24,7 @@
     --platinum:#E5E5E5;
     --text-muted: rgba(229,229,229,0.55);
     --text-faint: rgba(229,229,229,0.35);
+    --danger:#E5484D;
     --radius-lg: 20px;
     --radius-md: 14px;
     --radius-sm: 10px;
@@ -114,15 +115,29 @@
     width: 100%; background: rgba(255,255,255,0.035);
     border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
     color: #fff; font-size: 14px; padding: 12px; outline: none;
+    transition: border-color .15s, background .15s;
   }
   select option { background: #141414; color: #fff; }
   input:focus, select:focus, textarea:focus{ border-color: var(--gold-1); background: rgba(212,175,55,0.05); }
+
+  /* ERROR STATE */
+  input.field-error, select.field-error{
+    border-color: var(--danger) !important;
+    background: rgba(229,72,77,0.06) !important;
+  }
+  .field-error-msg{
+    display:none;
+    font-size: 11px;
+    color: var(--danger);
+    margin-top: 5px;
+  }
+  .field.has-error .field-error-msg{ display:block; }
 
   .fav-chips { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
   .fav-chip {
     font-size: 11px; padding: 5px 10px; border-radius: 100px;
     border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
-    color: var(--text-muted); cursor: pointer; whitespace: nowrap;
+    color: var(--text-muted); cursor: pointer; white-space: nowrap;
   }
   .fav-chip:active { border-color: var(--gold-1); color: #fff; }
 
@@ -166,6 +181,18 @@
     color: #1a1300; background: linear-gradient(135deg, #F5DE9A 0%, var(--gold-1) 50%, #C69A2E 100%);
     box-shadow: 0 8px 24px rgba(212,175,55,0.25); cursor: pointer;
   }
+  .submit-btn:active{ transform: scale(0.98); }
+  .submit-btn:disabled{ opacity: 0.6; cursor: default; }
+
+  .toast{
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+    background: #1c1c1c; border: 1px solid var(--gold-1); color: #fff;
+    padding: 12px 18px; border-radius: 12px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+    max-width: 90%; text-align: center; z-index: 999;
+  }
+  .toast.show{ opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error{ border-color: var(--danger); }
 </style>
 </head>
 <body>
@@ -190,7 +217,7 @@
 
   <form id="orderForm" class="form-card">
     <p class="section-title">Тип поїздки</p>
-    
+
     <div class="mode-toggle">
       <div class="mode-btn active" id="modeDistanceBtn">🚘 За маршрутом</div>
       <div class="mode-btn" id="modeHourlyBtn">⏱ Почасова оренда</div>
@@ -203,9 +230,10 @@
         <span class="fav-chip" data-addr="вул. Європейська, 1">🏢 Центр</span>
       </div>
 
-      <div class="field">
+      <div class="field" id="fromAddrField">
         <label class="field-label">Звідки (Точка А)</label>
         <input type="text" id="fromAddr" placeholder="Адреса подачі">
+        <span class="field-error-msg">Вкажіть адресу подачі</span>
       </div>
 
       <div id="viaWrap" class="field" style="display:none;">
@@ -215,16 +243,18 @@
 
       <button type="button" id="addStopBtn" class="add-stop-btn">+ Додати зупинку</button>
 
-      <div class="field">
+      <div class="field" id="toAddrField">
         <label class="field-label">Куди (Точка В)</label>
         <input type="text" id="toAddr" placeholder="Пункт призначення">
+        <span class="field-error-msg">Вкажіть пункт призначення</span>
       </div>
     </div>
 
     <div id="hourlyFieldsBlock" style="display:none;">
-      <div class="field">
+      <div class="field" id="hourlyFromAddrField">
         <label class="field-label">Адреса подачі авто</label>
         <input type="text" id="hourlyFromAddr" placeholder="Звідки забрати">
+        <span class="field-error-msg">Вкажіть адресу подачі авто</span>
       </div>
       <div class="field">
         <label class="field-label">Тривалість оренди</label>
@@ -254,13 +284,15 @@
 
     <p class="section-title" style="margin-top:20px;">Контакти</p>
     <div class="field-row">
-      <div class="field">
+      <div class="field" id="clientNameField">
         <label class="field-label">Ім'я</label>
         <input type="text" id="clientName" placeholder="Ваше ім'я">
+        <span class="field-error-msg">Вкажіть ім'я</span>
       </div>
-      <div class="field">
+      <div class="field" id="clientPhoneField">
         <label class="field-label">Телефон</label>
         <input type="tel" id="clientPhone" placeholder="+380...">
+        <span class="field-error-msg">Невірний номер телефону</span>
       </div>
     </div>
   </form>
@@ -268,14 +300,22 @@
   <button type="button" class="submit-btn" id="submitBtn">Замовити Apex</button>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 (function(){
   const BASE_FARE = 100;   // Подача авто (грн)
-  const PER_KM = 55;       // Оновлений тариф: 55 грн / 1 км
+  const PER_KM = 55;       // Тариф: 55 грн / 1 км
   const HOURLY_RATE = 1000; // Почасова оренда (грн / година)
   const UMAN_COORDS = [48.7484, 30.2218];
 
+  // Telegram WebApp init (safe no-op outside Telegram)
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  if (tg) { tg.ready(); tg.expand(); }
+
   let isHourlyMode = false;
+  let lastCalculatedPrice = 0;
+  let lastRouteSummary = '';
 
   const map = L.map('map').setView(UMAN_COORDS, 13);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
@@ -294,6 +334,7 @@
     modeHourlyBtn.classList.remove('active');
     distanceFieldsBlock.style.display = 'block';
     hourlyFieldsBlock.style.display = 'none';
+    clearFieldError('hourlyFromAddrField');
     handleAddressInput();
   });
 
@@ -303,6 +344,8 @@
     modeDistanceBtn.classList.remove('active');
     distanceFieldsBlock.style.display = 'none';
     hourlyFieldsBlock.style.display = 'block';
+    clearFieldError('fromAddrField');
+    clearFieldError('toAddrField');
     calculateHourlyPrice();
   });
 
@@ -310,11 +353,14 @@
 
   function calculateHourlyPrice() {
     if (!isHourlyMode) return;
-    const hours = parseInt(document.getElementById('hoursSelect').value);
+    const hours = parseInt(document.getElementById('hoursSelect').value, 10);
     const total = hours * HOURLY_RATE;
 
+    lastCalculatedPrice = total;
+    lastRouteSummary = `${hours} год. оренди авто з водієм`;
+
     document.getElementById('distText').innerText = 'Почасова оренда';
-    document.getElementById('routeDetails').innerText = `${hours} год. оренди авто з водієм`;
+    document.getElementById('routeDetails').innerText = lastRouteSummary;
     document.getElementById('priceText').innerText = `${total} ₴`;
   }
 
@@ -323,8 +369,10 @@
       const addr = chip.dataset.addr;
       if (!document.getElementById('fromAddr').value) {
         document.getElementById('fromAddr').value = addr;
+        clearFieldError('fromAddrField');
       } else {
         document.getElementById('toAddr').value = addr;
+        clearFieldError('toAddrField');
       }
       handleAddressInput();
     });
@@ -366,11 +414,14 @@
       const data = await res.json();
       if (data.routes && data.routes.length > 0) {
         const route = data.routes[0];
-        const distanceKm = (route.distance / 1000).toFixed(1);
+        const distanceKm = parseFloat((route.distance / 1000).toFixed(1));
         const durationMin = Math.round(route.duration / 60);
 
-        // Расчет стоимости по новому тарифу 55 грн/км
+        // Расчёт по тарифу 55 грн/км
         const totalPrice = Math.round(BASE_FARE + (distanceKm * PER_KM));
+
+        lastCalculatedPrice = totalPrice;
+        lastRouteSummary = `${distanceKm} км · ~${durationMin} хв`;
 
         if (routePolyline) map.removeLayer(routePolyline);
         const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
@@ -378,7 +429,7 @@
         map.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
 
         document.getElementById('distText').innerText = 'Маршрут розраховано';
-        document.getElementById('routeDetails').innerText = `${distanceKm} км · ~${durationMin} хв`;
+        document.getElementById('routeDetails').innerText = lastRouteSummary;
         document.getElementById('priceText').innerText = `${totalPrice} ₴`;
       }
     } catch(e) { console.error(e); }
@@ -415,9 +466,128 @@
     if (coords.length >= 2) calculateMultiRoute(coords);
   }, 800);
 
-  document.getElementById('fromAddr').addEventListener('input', handleAddressInput);
+  document.getElementById('fromAddr').addEventListener('input', () => { clearFieldError('fromAddrField'); handleAddressInput(); });
   document.getElementById('viaAddr').addEventListener('input', handleAddressInput);
-  document.getElementById('toAddr').addEventListener('input', handleAddressInput);
+  document.getElementById('toAddr').addEventListener('input', () => { clearFieldError('toAddrField'); handleAddressInput(); });
+  document.getElementById('hourlyFromAddr').addEventListener('input', () => clearFieldError('hourlyFromAddrField'));
+  document.getElementById('clientName').addEventListener('input', () => clearFieldError('clientNameField'));
+  document.getElementById('clientPhone').addEventListener('input', () => clearFieldError('clientPhoneField'));
+
+  // ---------- VALIDATION ----------
+
+  function setFieldError(fieldId, hasError) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    const input = field.querySelector('input, select');
+    field.classList.toggle('has-error', hasError);
+    if (input) input.classList.toggle('field-error', hasError);
+  }
+
+  function clearFieldError(fieldId) {
+    setFieldError(fieldId, false);
+  }
+
+  function isValidPhone(phone) {
+    // accepts +380XXXXXXXXX or similar, 9-15 digits after optional +
+    const digits = phone.replace(/[^\d]/g, '');
+    return digits.length >= 9 && digits.length <= 15;
+  }
+
+  function validateForm() {
+    let valid = true;
+
+    // Route / hourly fields
+    if (isHourlyMode) {
+      const hourlyFrom = document.getElementById('hourlyFromAddr').value.trim();
+      if (!hourlyFrom) { setFieldError('hourlyFromAddrField', true); valid = false; }
+      else { setFieldError('hourlyFromAddrField', false); }
+    } else {
+      const fromAddr = document.getElementById('fromAddr').value.trim();
+      const toAddr = document.getElementById('toAddr').value.trim();
+      if (!fromAddr) { setFieldError('fromAddrField', true); valid = false; }
+      else { setFieldError('fromAddrField', false); }
+      if (!toAddr) { setFieldError('toAddrField', true); valid = false; }
+      else { setFieldError('toAddrField', false); }
+    }
+
+    // Name
+    const name = document.getElementById('clientName').value.trim();
+    if (!name) { setFieldError('clientNameField', true); valid = false; }
+    else { setFieldError('clientNameField', false); }
+
+    // Phone
+    const phone = document.getElementById('clientPhone').value.trim();
+    if (!phone || !isValidPhone(phone)) { setFieldError('clientPhoneField', true); valid = false; }
+    else { setFieldError('clientPhoneField', false); }
+
+    return valid;
+  }
+
+  // ---------- TOAST ----------
+
+  let toastTimer = null;
+  function showToast(message, isError) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.toggle('error', !!isError);
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+  }
+
+  // ---------- SUBMIT ----------
+
+  const submitBtn = document.getElementById('submitBtn');
+
+  submitBtn.addEventListener('click', () => {
+    if (!validateForm()) {
+      showToast('Заповніть, будь ласка, всі обов\u2019язкові поля', true);
+      // scroll to first error field
+      const firstError = document.querySelector('.field.has-error');
+      if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    const order = {
+      mode: isHourlyMode ? 'hourly' : 'route',
+      from: isHourlyMode
+        ? document.getElementById('hourlyFromAddr').value.trim()
+        : document.getElementById('fromAddr').value.trim(),
+      via: (!isHourlyMode && viaWrap.style.display !== 'none')
+        ? document.getElementById('viaAddr').value.trim()
+        : null,
+      to: isHourlyMode ? null : document.getElementById('toAddr').value.trim(),
+      hours: isHourlyMode ? parseInt(document.getElementById('hoursSelect').value, 10) : null,
+      shareTrip: document.getElementById('shareTripToggle').checked,
+      clientName: document.getElementById('clientName').value.trim(),
+      clientPhone: document.getElementById('clientPhone').value.trim(),
+      price: lastCalculatedPrice,
+      summary: lastRouteSummary
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Оформлення...';
+
+    if (tg) {
+      try {
+        tg.sendData(JSON.stringify(order));
+        showToast('Замовлення надіслано!');
+      } catch (e) {
+        console.error(e);
+        showToast('Помилка надсилання замовлення', true);
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Замовити Apex';
+      }
+    } else {
+      // Fallback for testing outside Telegram
+      console.log('ORDER:', order);
+      showToast(`Замовлення оформлено: ${order.price} ₴`);
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Замовити Apex';
+      }, 1500);
+    }
+  });
 })();
 </script>
 </body>
