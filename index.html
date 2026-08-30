@@ -77,21 +77,19 @@
   }
   .section-title::after{ content:''; flex:1; height:1px; background: var(--border-soft); }
 
-  .mode-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
-  .mode-btn {
+  .mode-toggle, .passengers-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+  .mode-btn, .pax-btn {
     flex: 1; padding: 10px; border-radius: var(--radius-sm);
     border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
     color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; text-align: center;
     transition: all .2s ease;
   }
-  .mode-btn.active { border-color: var(--gold-1); background: rgba(212,175,55,0.12); color: var(--gold-2); }
+  .mode-btn.active, .pax-btn.active { border-color: var(--gold-1); background: rgba(212,175,55,0.12); color: var(--gold-2); }
 
   .field{ margin-bottom: 14px; position: relative; }
   .field-label{ display:block; font-size: 11px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
 
-  .input-with-btn {
-    display: flex; gap: 8px; align-items: center;
-  }
+  .input-with-btn { display: flex; gap: 8px; align-items: center; }
 
   input[type="text"], input[type="tel"], textarea, select{
     width: 100%; background: rgba(255,255,255,0.035);
@@ -104,7 +102,6 @@
   select option { background: #141414; color: #fff; }
   input:focus, textarea:focus, select:focus{ border-color: var(--gold-1); background: rgba(212,175,55,0.05); }
 
-  /* LOCATE BUTTON */
   .locate-btn {
     background: rgba(212,175,55,0.12); border: 1px solid var(--gold-1);
     color: var(--gold-2); border-radius: var(--radius-sm); padding: 12px;
@@ -236,6 +233,13 @@
       </div>
     </div>
 
+    <p class="section-title">Дорослі пасажири</p>
+    <div class="passengers-toggle">
+      <div class="pax-btn active" data-count="1">1 особа</div>
+      <div class="pax-btn" data-count="2">2 особи</div>
+      <div class="pax-btn" data-count="3">3 особи</div>
+    </div>
+
     <div class="field">
       <label class="field-label" for="orderComment">Коментар до замовлення</label>
       <textarea id="orderComment" placeholder="Під'їзд, під'їзні шляхи, дитяче крісло, багаж..."></textarea>
@@ -275,6 +279,7 @@
   if (tg) { tg.ready(); tg.expand(); }
 
   let isHourlyMode = false;
+  let selectedPassengers = 1;
   let lastCalculatedPrice = 0;
   let lastRouteSummary = '';
 
@@ -284,21 +289,23 @@
   let markers = [];
   let routePolyline = null;
 
-  // ---------- LOCAL STORAGE LOAD ----------
+  // PASSENGERS SELECTOR
+  const paxBtns = document.querySelectorAll('.pax-btn');
+  paxBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      paxBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedPassengers = parseInt(btn.dataset.count, 10);
+    });
+  });
+
+  // LOCAL STORAGE LOAD
   function loadSavedUserData() {
     const savedName = localStorage.getItem('apex_client_name');
     const savedPhone = localStorage.getItem('apex_client_phone');
-    const savedFrom = localStorage.getItem('apex_last_from');
-    const savedTo = localStorage.getItem('apex_last_to');
 
     if (savedName) document.getElementById('clientName').value = savedName;
     if (savedPhone) document.getElementById('clientPhone').value = savedPhone;
-    if (savedFrom) document.getElementById('fromAddr').value = savedFrom;
-    if (savedTo) document.getElementById('toAddr').value = savedTo;
-
-    if (savedFrom || savedTo) {
-      handleAddressInput();
-    }
   }
 
   function saveUserData(name, phone, from, to) {
@@ -314,6 +321,14 @@
     markers.forEach(m => map.removeLayer(m));
     markers = [];
     if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
+  }
+
+  function resetCalculatedState() {
+    lastCalculatedPrice = 0;
+    lastRouteSummary = '0 км · ~0 хв';
+    document.getElementById('distText').innerText = 'Вкажіть маршрут';
+    document.getElementById('routeDetails').innerText = lastRouteSummary;
+    document.getElementById('priceText').innerText = '0 ₴';
   }
 
   const modeDistanceBtn = document.getElementById('modeDistanceBtn');
@@ -356,8 +371,7 @@
     document.getElementById('priceText').innerText = `${total} ₴`;
   }
 
-  // ---------- GEOLOCATION & REVERSE GEOCODING ----------
-
+  // GEOLOCATION & REVERSE GEOCODING
   async function reverseGeocode(lat, lng) {
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=uk`);
@@ -384,7 +398,7 @@
     showToast('Визначаємо вашу геолокацію...');
 
     if (!navigator.geolocation) {
-      showToast('Геолокація не підтримується вашим пристроєм', true);
+      showToast('Геолокація не підтримується', true);
       return;
     }
 
@@ -403,13 +417,12 @@
       },
       (err) => {
         console.error(err);
-        showToast('Не вдалося отримати доступ до геолокації', true);
+        showToast('Не вдалося отримати доступ до GPS', true);
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }
 
-  // Pick address by map click
   map.on('click', async (e) => {
     const lat = e.latlng.lat;
     const lng = e.latlng.lng;
@@ -434,8 +447,7 @@
   document.getElementById('locateHourlyBtn').addEventListener('click', getUserLocation);
   document.getElementById('geoLocateChip').addEventListener('click', getUserLocation);
 
-  // ---------- CHIPS & STOPS ----------
-
+  // CHIPS & STOPS
   document.querySelectorAll('.fav-chip:not(.geo-chip)').forEach(chip => {
     chip.addEventListener('click', () => {
       const addr = chip.dataset.addr;
@@ -522,6 +534,7 @@
 
     if (coords.length >= 2) calculateMultiRoute(coords);
     else if (coords.length === 1) map.setView(coords[0], 15);
+    else resetCalculatedState();
   }, 800);
 
   document.getElementById('fromAddr').addEventListener('input', () => { clearFieldError('fromAddrField'); handleAddressInput(); });
@@ -569,6 +582,18 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
   }
 
+  function resetFormAfterOrder() {
+    document.getElementById('fromAddr').value = '';
+    document.getElementById('viaAddr').value = '';
+    document.getElementById('toAddr').value = '';
+    document.getElementById('hourlyFromAddr').value = '';
+    document.getElementById('orderComment').value = '';
+    viaWrap.style.display = 'none';
+    addStopBtn.innerText = '+ Додати зупинку';
+    clearMapLayers();
+    resetCalculatedState();
+  }
+
   async function sendTelegramMessage(chatId, text) {
     const payload = { chat_id: chatId, text: text, parse_mode: 'HTML' };
     return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -595,6 +620,7 @@
       via: (!isHourlyMode && viaWrap.style.display !== 'none') ? document.getElementById('viaAddr').value.trim() : null,
       to: isHourlyMode ? null : document.getElementById('toAddr').value.trim(),
       hours: isHourlyMode ? document.getElementById('hoursSelect').value : null,
+      passengers: selectedPassengers,
       comment: document.getElementById('orderComment').value.trim(),
       clientName: document.getElementById('clientName').value.trim(),
       clientPhone: document.getElementById('clientPhone').value.trim(),
@@ -602,7 +628,6 @@
       summary: lastRouteSummary
     };
 
-    // Save user info for future orders
     saveUserData(order.clientName, order.clientPhone, order.from, order.to);
 
     submitBtn.disabled = true;
@@ -611,6 +636,7 @@
     let textDisp = `🚘 <b>НОВЕ ЗАМОВЛЕННЯ ${order.id}</b>\n\n`;
     textDisp += `👤 <b>Клієнт:</b> ${order.clientName}\n`;
     textDisp += `📞 <b>Телефон:</b> ${order.clientPhone}\n`;
+    textDisp += `👨‍👩‍👧‍👦 <b>Пасажири:</b> ${order.passengers} дорос.\n`;
     textDisp += `📍 <b>Тип:</b> ${order.mode}\n`;
     textDisp += `📍 <b>Звідки:</b> ${order.from}\n`;
     if (order.via) textDisp += `🛑 <b>Зупинка:</b> ${order.via}\n`;
@@ -623,6 +649,7 @@
     const clientChatId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : null;
     let textClient = `✅ <b>Ваше замовлення ${order.id} прийнято!</b>\n\n`;
     textClient += `📍 <b>Маршрут:</b> ${order.from} → ${order.to || (order.hours + ' год.')}\n`;
+    textClient += `👨‍👩‍👧‍👦 <b>Пасажири:</b> ${order.passengers} дорос.\n`;
     textClient += `💰 <b>Вартість:</b> ${order.price} ₴\n`;
     if (order.comment) textClient += `💬 <b>Коментар:</b> ${order.comment}\n`;
     textClient += `\nДякуємо, що обрали APEX! Водій зв'яжеться з вами найближчим часом.`;
@@ -635,9 +662,12 @@
       }
 
       showToast('Замовлення успішно надіслано!');
+      
       setTimeout(() => {
+        resetFormAfterOrder();
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Замовити Apex';
         if (tg) tg.close();
-        else { submitBtn.disabled = false; submitBtn.innerText = 'Замовити Apex'; }
       }, 1500);
 
     } catch (err) {
