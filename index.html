@@ -59,15 +59,11 @@
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-soft);
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     position: relative;
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   }
-  #map {
-    width: 100%;
-    height: 240px;
-    background: #1a1a1a;
-  }
+  #map { width: 100%; height: 200px; background: #1a1a1a; }
 
   /* FARE CALC BOX */
   .calc-box {
@@ -98,18 +94,71 @@
   }
   .section-title::after{ content:''; flex:1; height:1px; background: var(--border-soft); }
 
-  .field{ margin-bottom: 14px; }
+  /* MODE TOGGLE */
+  .mode-toggle {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .mode-btn {
+    flex: 1; padding: 10px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
+    color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; text-align: center;
+  }
+  .mode-btn.active {
+    border-color: var(--gold-1); background: rgba(212,175,55,0.12); color: var(--gold-2);
+  }
+
+  .field{ margin-bottom: 14px; position: relative; }
   .field-label{ display:block; font-size: 11px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
 
-  input[type="text"], input[type="tel"], textarea{
+  input[type="text"], input[type="tel"], select, textarea{
     width: 100%; background: rgba(255,255,255,0.035);
     border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
     color: #fff; font-size: 14px; padding: 12px; outline: none;
   }
-  input:focus, textarea:focus{ border-color: var(--gold-1); background: rgba(212,175,55,0.05); }
+  select option { background: #141414; color: #fff; }
+  input:focus, select:focus, textarea:focus{ border-color: var(--gold-1); background: rgba(212,175,55,0.05); }
+
+  .fav-chips { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
+  .fav-chip {
+    font-size: 11px; padding: 5px 10px; border-radius: 100px;
+    border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
+    color: var(--text-muted); cursor: pointer; whitespace: nowrap;
+  }
+  .fav-chip:active { border-color: var(--gold-1); color: #fff; }
+
+  .add-stop-btn {
+    background: none; border: none; color: var(--gold-2);
+    font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 0;
+    display: inline-flex; align-items: center; gap: 4px; margin-bottom: 12px;
+  }
 
   .field-row{ display:flex; gap: 10px; }
   .field-row .field{ flex:1; }
+
+  /* SWITCH TOGGLE FOR LIVE TRIP */
+  .switch-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-top: 1px solid var(--border-soft); margin-top: 14px;
+  }
+  .switch-label { font-size: 13px; color: #fff; font-weight: 500; }
+  .switch-desc { font-size: 11px; color: var(--text-muted); display: block; }
+
+  .switch {
+    position: relative; display: inline-block; width: 44px; height: 24px;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background-color: rgba(255,255,255,0.1); transition: .3s;
+    border-radius: 24px; border: 1px solid var(--border-soft);
+  }
+  .slider:before {
+    position: absolute; content: ""; height: 16px; width: 16px;
+    left: 3px; bottom: 3px; background-color: var(--text-muted);
+    transition: .3s; border-radius: 50%;
+  }
+  input:checked + .slider { background-color: rgba(212,175,55,0.3); border-color: var(--gold-1); }
+  input:checked + .slider:before { transform: translateX(20px); background-color: var(--gold-1); }
 
   .submit-btn{
     width: 100%; border: none; border-radius: var(--radius-md); padding: 16px;
@@ -127,12 +176,10 @@
     <p class="tagline">Reach the top</p>
   </div>
 
-  <!-- Карта -->
   <div class="map-card">
     <div id="map"></div>
   </div>
 
-  <!-- Расчет стоимости -->
   <div class="calc-box">
     <div class="calc-info">
       <span id="distText">Вкажіть маршрут</span>
@@ -142,16 +189,67 @@
   </div>
 
   <form id="orderForm" class="form-card">
-    <p class="section-title">Маршрут</p>
+    <p class="section-title">Тип поїздки</p>
     
-    <div class="field">
-      <label class="field-label">Звідки (Точка 1)</label>
-      <input type="text" id="fromAddr" placeholder="вул. Успенська, 138а">
+    <div class="mode-toggle">
+      <div class="mode-btn active" id="modeDistanceBtn">🚘 За маршрутом</div>
+      <div class="mode-btn" id="modeHourlyBtn">⏱ Почасова оренда</div>
     </div>
 
-    <div class="field">
-      <label class="field-label">Куди (Точка 2)</label>
-      <input type="text" id="toAddr" placeholder="вул. Гостинна, 1">
+    <div id="distanceFieldsBlock">
+      <div class="fav-chips">
+        <span class="fav-chip" data-addr="вул. Успенська, 138">📍 Успенська</span>
+        <span class="fav-chip" data-addr="Парк Софіївка">🌳 Софіївка</span>
+        <span class="fav-chip" data-addr="вул. Європейська, 1">🏢 Центр</span>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Звідки (Точка А)</label>
+        <input type="text" id="fromAddr" placeholder="Адреса подачі">
+      </div>
+
+      <div id="viaWrap" class="field" style="display:none;">
+        <label class="field-label">Зупинка (Точка Б)</label>
+        <input type="text" id="viaAddr" placeholder="Проміжна адреса">
+      </div>
+
+      <button type="button" id="addStopBtn" class="add-stop-btn">+ Додати зупинку</button>
+
+      <div class="field">
+        <label class="field-label">Куди (Точка В)</label>
+        <input type="text" id="toAddr" placeholder="Пункт призначення">
+      </div>
+    </div>
+
+    <div id="hourlyFieldsBlock" style="display:none;">
+      <div class="field">
+        <label class="field-label">Адреса подачі авто</label>
+        <input type="text" id="hourlyFromAddr" placeholder="Звідки забрати">
+      </div>
+      <div class="field">
+        <label class="field-label">Тривалість оренди</label>
+        <select id="hoursSelect">
+          <option value="1">1 година</option>
+          <option value="2" selected>2 години</option>
+          <option value="3">3 години</option>
+          <option value="4">4 години</option>
+          <option value="6">6 годин</option>
+          <option value="8">8 годин (Робочий день)</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="section-title" style="margin-top:20px;">Опції безпеки</p>
+
+    <div class="switch-row">
+      <div>
+        <span class="switch-label">Надіслати посилання на поїздку</span>
+        <span class="switch-desc">Отримати Live-посилання для близьких</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="shareTripToggle">
+        <span class="slider"></span>
+      </label>
     </div>
 
     <p class="section-title" style="margin-top:20px;">Контакти</p>
@@ -172,39 +270,97 @@
 
 <script>
 (function(){
-  const BASE_FARE = 80;   // Подача авто (грн)
-  const PER_KM = 20;       // Вартість за 1 км (грн)
-  const UMAN_COORDS = [48.7484, 30.2218]; // Центр Умані
+  const BASE_FARE = 100;   // Подача авто (грн)
+  const PER_KM = 55;       // Оновлений тариф: 55 грн / 1 км
+  const HOURLY_RATE = 1000; // Почасова оренда (грн / година)
+  const UMAN_COORDS = [48.7484, 30.2218];
 
-  // Инициализация карты Leaflet
+  let isHourlyMode = false;
+
   const map = L.map('map').setView(UMAN_COORDS, 13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
-  let markerA = null, markerB = null, routePolyline = null;
-  let coordA = null, coordB = null;
+  let markers = [];
+  let routePolyline = null;
 
-  // Функция автокодирования адреса в координаты через Nominatim OSM
+  const modeDistanceBtn = document.getElementById('modeDistanceBtn');
+  const modeHourlyBtn = document.getElementById('modeHourlyBtn');
+  const distanceFieldsBlock = document.getElementById('distanceFieldsBlock');
+  const hourlyFieldsBlock = document.getElementById('hourlyFieldsBlock');
+
+  modeDistanceBtn.addEventListener('click', () => {
+    isHourlyMode = false;
+    modeDistanceBtn.classList.add('active');
+    modeHourlyBtn.classList.remove('active');
+    distanceFieldsBlock.style.display = 'block';
+    hourlyFieldsBlock.style.display = 'none';
+    handleAddressInput();
+  });
+
+  modeHourlyBtn.addEventListener('click', () => {
+    isHourlyMode = true;
+    modeHourlyBtn.classList.add('active');
+    modeDistanceBtn.classList.remove('active');
+    distanceFieldsBlock.style.display = 'none';
+    hourlyFieldsBlock.style.display = 'block';
+    calculateHourlyPrice();
+  });
+
+  document.getElementById('hoursSelect').addEventListener('change', calculateHourlyPrice);
+
+  function calculateHourlyPrice() {
+    if (!isHourlyMode) return;
+    const hours = parseInt(document.getElementById('hoursSelect').value);
+    const total = hours * HOURLY_RATE;
+
+    document.getElementById('distText').innerText = 'Почасова оренда';
+    document.getElementById('routeDetails').innerText = `${hours} год. оренди авто з водієм`;
+    document.getElementById('priceText').innerText = `${total} ₴`;
+  }
+
+  document.querySelectorAll('.fav-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const addr = chip.dataset.addr;
+      if (!document.getElementById('fromAddr').value) {
+        document.getElementById('fromAddr').value = addr;
+      } else {
+        document.getElementById('toAddr').value = addr;
+      }
+      handleAddressInput();
+    });
+  });
+
+  const addStopBtn = document.getElementById('addStopBtn');
+  const viaWrap = document.getElementById('viaWrap');
+  addStopBtn.addEventListener('click', () => {
+    if (viaWrap.style.display === 'none') {
+      viaWrap.style.display = 'block';
+      addStopBtn.innerText = '✕ Видалити зупинку';
+    } else {
+      viaWrap.style.display = 'none';
+      document.getElementById('viaAddr').value = '';
+      addStopBtn.innerText = '+ Додати зупинку';
+      handleAddressInput();
+    }
+  });
+
   async function geocode(query) {
     if (!query) return null;
     const fullQuery = query.toLowerCase().includes('умань') ? query : `Умань, ${query}`;
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullQuery)}`);
       const data = await res.json();
-      if (data && data.length > 0) {
-        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-      }
+      if (data && data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
     } catch(e) { console.error(e); }
     return null;
   }
 
-  // Запрос маршрута и расстояния OSRM
-  async function calculateRoute() {
-    if (!coordA || !coordB) return;
+  async function calculateMultiRoute(waypointCoords) {
+    if (waypointCoords.length < 2 || isHourlyMode) return;
 
-    const url = `https://router.project-osrm.org/route/v1/driving/${coordA[1]},${coordA[0]};${coordB[1]},${coordB[0]}?overview=full&geometries=geojson`;
+    const coordStr = waypointCoords.map(c => `${c[1]},${c[0]}`).join(';');
+    const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`;
+
     try {
       const res = await fetch(url);
       const data = await res.json();
@@ -212,54 +368,55 @@
         const route = data.routes[0];
         const distanceKm = (route.distance / 1000).toFixed(1);
         const durationMin = Math.round(route.duration / 60);
-        
-        // Расчет цены
+
+        // Расчет стоимости по новому тарифу 55 грн/км
         const totalPrice = Math.round(BASE_FARE + (distanceKm * PER_KM));
 
-        // Отрисовка линии маршрута
         if (routePolyline) map.removeLayer(routePolyline);
         const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
         routePolyline = L.polyline(coords, { color: '#D4AF37', weight: 4 }).addTo(map);
         map.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
 
-        // Обновление UI
-        document.getElementById('distText').innerText = 'Розраховано маршрут';
+        document.getElementById('distText').innerText = 'Маршрут розраховано';
         document.getElementById('routeDetails').innerText = `${distanceKm} км · ~${durationMin} хв`;
         document.getElementById('priceText').innerText = `${totalPrice} ₴`;
       }
     } catch(e) { console.error(e); }
   }
 
-  // Дебаунс для ввода адресов
   function debounce(fn, wait) {
     let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
   }
 
   const handleAddressInput = debounce(async () => {
+    if (isHourlyMode) return;
+
     const valA = document.getElementById('fromAddr').value.trim();
+    const valVia = document.getElementById('viaAddr').value.trim();
     const valB = document.getElementById('toAddr').value.trim();
 
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    const coords = [];
+
     if (valA) {
-      const posA = await geocode(valA);
-      if (posA) {
-        coordA = posA;
-        if (markerA) map.removeLayer(markerA);
-        markerA = L.marker(coordA).addTo(map).bindPopup('A: ' + valA);
-      }
+      const pA = await geocode(valA);
+      if (pA) { coords.push(pA); markers.push(L.marker(pA).addTo(map).bindPopup('А: ' + valA)); }
+    }
+    if (viaWrap.style.display !== 'none' && valVia) {
+      const pVia = await geocode(valVia);
+      if (pVia) { coords.push(pVia); markers.push(L.marker(pVia).addTo(map).bindPopup('Б: ' + valVia)); }
     }
     if (valB) {
-      const posB = await geocode(valB);
-      if (posB) {
-        coordB = posB;
-        if (markerB) map.removeLayer(markerB);
-        markerB = L.marker(coordB).addTo(map).bindPopup('B: ' + valB);
-      }
+      const pB = await geocode(valB);
+      if (pB) { coords.push(pB); markers.push(L.marker(pB).addTo(map).bindPopup('В: ' + valB)); }
     }
 
-    if (coordA && coordB) calculateRoute();
+    if (coords.length >= 2) calculateMultiRoute(coords);
   }, 800);
 
   document.getElementById('fromAddr').addEventListener('input', handleAddressInput);
+  document.getElementById('viaAddr').addEventListener('input', handleAddressInput);
   document.getElementById('toAddr').addEventListener('input', handleAddressInput);
 })();
 </script>
