@@ -103,6 +103,7 @@
     flex: 1; padding: 10px; border-radius: var(--radius-sm);
     border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
     color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; text-align: center;
+    transition: all .2s ease;
   }
   .mode-btn.active {
     border-color: var(--gold-1); background: rgba(212,175,55,0.12); color: var(--gold-2);
@@ -138,6 +139,7 @@
     font-size: 11px; padding: 5px 10px; border-radius: 100px;
     border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
     color: var(--text-muted); cursor: pointer; white-space: nowrap;
+    transition: background .2s, border-color .2s;
   }
   .fav-chip:active { border-color: var(--gold-1); color: #fff; }
 
@@ -180,6 +182,7 @@
     font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
     color: #1a1300; background: linear-gradient(135deg, #F5DE9A 0%, var(--gold-1) 50%, #C69A2E 100%);
     box-shadow: 0 8px 24px rgba(212,175,55,0.25); cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.2s ease;
   }
   .submit-btn:active{ transform: scale(0.98); }
   .submit-btn:disabled{ opacity: 0.6; cursor: default; }
@@ -189,7 +192,7 @@
     background: #1c1c1c; border: 1px solid var(--gold-1); color: #fff;
     padding: 12px 18px; border-radius: 12px; font-size: 13px;
     opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
-    max-width: 90%; text-align: center; z-index: 999;
+    max-width: 90%; text-align: center; z-index: 9999;
   }
   .toast.show{ opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error{ border-color: var(--danger); }
@@ -215,7 +218,7 @@
     <div class="calc-price" id="priceText">0 ₴</div>
   </div>
 
-  <form id="orderForm" class="form-card">
+  <form id="orderForm" class="form-card" onsubmit="return false;">
     <p class="section-title">Тип поїздки</p>
 
     <div class="mode-toggle">
@@ -231,20 +234,20 @@
       </div>
 
       <div class="field" id="fromAddrField">
-        <label class="field-label">Звідки (Точка А)</label>
+        <label class="field-label" for="fromAddr">Звідки (Точка А)</label>
         <input type="text" id="fromAddr" placeholder="Адреса подачі">
         <span class="field-error-msg">Вкажіть адресу подачі</span>
       </div>
 
       <div id="viaWrap" class="field" style="display:none;">
-        <label class="field-label">Зупинка (Точка Б)</label>
+        <label class="field-label" for="viaAddr">Зупинка (Точка Б)</label>
         <input type="text" id="viaAddr" placeholder="Проміжна адреса">
       </div>
 
       <button type="button" id="addStopBtn" class="add-stop-btn">+ Додати зупинку</button>
 
       <div class="field" id="toAddrField">
-        <label class="field-label">Куди (Точка В)</label>
+        <label class="field-label" for="toAddr">Куди (Точка В)</label>
         <input type="text" id="toAddr" placeholder="Пункт призначення">
         <span class="field-error-msg">Вкажіть пункт призначення</span>
       </div>
@@ -252,12 +255,12 @@
 
     <div id="hourlyFieldsBlock" style="display:none;">
       <div class="field" id="hourlyFromAddrField">
-        <label class="field-label">Адреса подачі авто</label>
+        <label class="field-label" for="hourlyFromAddr">Адреса подачі авто</label>
         <input type="text" id="hourlyFromAddr" placeholder="Звідки забрати">
         <span class="field-error-msg">Вкажіть адресу подачі авто</span>
       </div>
       <div class="field">
-        <label class="field-label">Тривалість оренди</label>
+        <label class="field-label" for="hoursSelect">Тривалість оренди</label>
         <select id="hoursSelect">
           <option value="1">1 година</option>
           <option value="2" selected>2 години</option>
@@ -285,12 +288,12 @@
     <p class="section-title" style="margin-top:20px;">Контакти</p>
     <div class="field-row">
       <div class="field" id="clientNameField">
-        <label class="field-label">Ім'я</label>
+        <label class="field-label" for="clientName">Ім'я</label>
         <input type="text" id="clientName" placeholder="Ваше ім'я">
         <span class="field-error-msg">Вкажіть ім'я</span>
       </div>
       <div class="field" id="clientPhoneField">
-        <label class="field-label">Телефон</label>
+        <label class="field-label" for="clientPhone">Телефон</label>
         <input type="tel" id="clientPhone" placeholder="+380...">
         <span class="field-error-msg">Невірний номер телефону</span>
       </div>
@@ -304,12 +307,14 @@
 
 <script>
 (function(){
-  const BASE_FARE = 100;   // Подача авто (грн)
-  const PER_KM = 55;       // Тариф: 55 грн / 1 км
-  const HOURLY_RATE = 1000; // Почасова оренда (грн / година)
+  const BOT_TOKEN = "8645469518:AAFJtGa2ZBgzOh_-lrM58uwFTcSywaSRUEg";
+  const CHAT_ID = "5585144477";
+
+  const BASE_FARE = 100;
+  const PER_KM = 55;
+  const HOURLY_RATE = 1000;
   const UMAN_COORDS = [48.7484, 30.2218];
 
-  // Telegram WebApp init (safe no-op outside Telegram)
   const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   if (tg) { tg.ready(); tg.expand(); }
 
@@ -322,6 +327,15 @@
 
   let markers = [];
   let routePolyline = null;
+
+  function clearMapLayers() {
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    if (routePolyline) {
+      map.removeLayer(routePolyline);
+      routePolyline = null;
+    }
+  }
 
   const modeDistanceBtn = document.getElementById('modeDistanceBtn');
   const modeHourlyBtn = document.getElementById('modeHourlyBtn');
@@ -346,6 +360,7 @@
     hourlyFieldsBlock.style.display = 'block';
     clearFieldError('fromAddrField');
     clearFieldError('toAddrField');
+    clearMapLayers();
     calculateHourlyPrice();
   });
 
@@ -354,7 +369,7 @@
   function calculateHourlyPrice() {
     if (!isHourlyMode) return;
     const hours = parseInt(document.getElementById('hoursSelect').value, 10);
-    const total = hours * HOURLY_RATE;
+    const total = BASE_FARE + (hours * HOURLY_RATE);
 
     lastCalculatedPrice = total;
     lastRouteSummary = `${hours} год. оренди авто з водієм`;
@@ -417,7 +432,6 @@
         const distanceKm = parseFloat((route.distance / 1000).toFixed(1));
         const durationMin = Math.round(route.duration / 60);
 
-        // Расчёт по тарифу 55 грн/км
         const totalPrice = Math.round(BASE_FARE + (distanceKm * PER_KM));
 
         lastCalculatedPrice = totalPrice;
@@ -446,8 +460,7 @@
     const valVia = document.getElementById('viaAddr').value.trim();
     const valB = document.getElementById('toAddr').value.trim();
 
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
+    clearMapLayers();
     const coords = [];
 
     if (valA) {
@@ -463,7 +476,13 @@
       if (pB) { coords.push(pB); markers.push(L.marker(pB).addTo(map).bindPopup('В: ' + valB)); }
     }
 
-    if (coords.length >= 2) calculateMultiRoute(coords);
+    if (coords.length >= 2) {
+      calculateMultiRoute(coords);
+    } else {
+      document.getElementById('distText').innerText = 'Вкажіть маршрут';
+      document.getElementById('routeDetails').innerText = '0 км · ~0 хв';
+      document.getElementById('priceText').innerText = '0 ₴';
+    }
   }, 800);
 
   document.getElementById('fromAddr').addEventListener('input', () => { clearFieldError('fromAddrField'); handleAddressInput(); });
@@ -488,7 +507,6 @@
   }
 
   function isValidPhone(phone) {
-    // accepts +380XXXXXXXXX or similar, 9-15 digits after optional +
     const digits = phone.replace(/[^\d]/g, '');
     return digits.length >= 9 && digits.length <= 15;
   }
@@ -496,7 +514,6 @@
   function validateForm() {
     let valid = true;
 
-    // Route / hourly fields
     if (isHourlyMode) {
       const hourlyFrom = document.getElementById('hourlyFromAddr').value.trim();
       if (!hourlyFrom) { setFieldError('hourlyFromAddrField', true); valid = false; }
@@ -510,12 +527,10 @@
       else { setFieldError('toAddrField', false); }
     }
 
-    // Name
     const name = document.getElementById('clientName').value.trim();
     if (!name) { setFieldError('clientNameField', true); valid = false; }
     else { setFieldError('clientNameField', false); }
 
-    // Phone
     const phone = document.getElementById('clientPhone').value.trim();
     if (!phone || !isValidPhone(phone)) { setFieldError('clientPhoneField', true); valid = false; }
     else { setFieldError('clientPhoneField', false); }
@@ -535,21 +550,20 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
   }
 
-  // ---------- SUBMIT ----------
+  // ---------- SUBMIT TO TELEGRAM BOT API ----------
 
   const submitBtn = document.getElementById('submitBtn');
 
-  submitBtn.addEventListener('click', () => {
+  submitBtn.addEventListener('click', async () => {
     if (!validateForm()) {
-      showToast('Заповніть, будь ласка, всі обов\u2019язкові поля', true);
-      // scroll to first error field
+      showToast('Заповніть, будь ласка, всі обов’язкові поля', true);
       const firstError = document.querySelector('.field.has-error');
       if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
     const order = {
-      mode: isHourlyMode ? 'hourly' : 'route',
+      mode: isHourlyMode ? 'Почасова оренда' : 'За маршрутом',
       from: isHourlyMode
         ? document.getElementById('hourlyFromAddr').value.trim()
         : document.getElementById('fromAddr').value.trim(),
@@ -557,8 +571,8 @@
         ? document.getElementById('viaAddr').value.trim()
         : null,
       to: isHourlyMode ? null : document.getElementById('toAddr').value.trim(),
-      hours: isHourlyMode ? parseInt(document.getElementById('hoursSelect').value, 10) : null,
-      shareTrip: document.getElementById('shareTripToggle').checked,
+      hours: isHourlyMode ? document.getElementById('hoursSelect').value : null,
+      shareTrip: document.getElementById('shareTripToggle').checked ? 'Так' : 'Ні',
       clientName: document.getElementById('clientName').value.trim(),
       clientPhone: document.getElementById('clientPhone').value.trim(),
       price: lastCalculatedPrice,
@@ -568,24 +582,52 @@
     submitBtn.disabled = true;
     submitBtn.innerText = 'Оформлення...';
 
-    if (tg) {
-      try {
-        tg.sendData(JSON.stringify(order));
-        showToast('Замовлення надіслано!');
-      } catch (e) {
-        console.error(e);
-        showToast('Помилка надсилання замовлення', true);
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'Замовити Apex';
+    let text = `🚘 <b>НОВЕ ЗАМОВЛЕННЯ APEX!</b>\n\n`;
+    text += `👤 <b>Клієнт:</b> ${order.clientName}\n`;
+    text += `📞 <b>Телефон:</b> ${order.clientPhone}\n`;
+    text += `📍 <b>Тип:</b> ${order.mode}\n`;
+    text += `📍 <b>Відкуди:</b> ${order.from}\n`;
+    if (order.via) text += `🛑 <b>Зупинка:</b> ${order.via}\n`;
+    if (order.to) text += `🏁 <b>Куди:</b> ${order.to}\n`;
+    if (order.hours) text += `⏱ <b>Тривалість:</b> ${order.hours} год.\n`;
+    text += `\n💰 <b>Сума:</b> ${order.price} ₴\n`;
+    text += `📊 <b>Деталі:</b> ${order.summary}\n`;
+    text += `🛡 <b>Live-посилання:</b> ${order.shareTrip}`;
+
+    if (tg && tg.sendData) {
+      try { tg.sendData(JSON.stringify(order)); } catch(e){}
+    }
+
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: text,
+          parse_mode: 'HTML'
+        })
+      });
+
+      const resData = await response.json();
+
+      if (resData.ok) {
+        showToast('Замовлення успішно надіслано!');
+        setTimeout(() => {
+          if (tg) tg.close();
+          else {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Замовити Apex';
+          }
+        }, 1500);
+      } else {
+        throw new Error(resData.description || 'Ошибка API');
       }
-    } else {
-      // Fallback for testing outside Telegram
-      console.log('ORDER:', order);
-      showToast(`Замовлення оформлено: ${order.price} ₴`);
-      setTimeout(() => {
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'Замовити Apex';
-      }, 1500);
+    } catch (err) {
+      console.error('Ошибка отправки:', err);
+      showToast('Помилка надсилання замовлення', true);
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Замовити Apex';
     }
   });
 })();
