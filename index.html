@@ -53,8 +53,27 @@
   .map-card {
     border-radius: var(--radius-lg); border: 1px solid var(--border-soft);
     overflow: hidden; margin-bottom: 16px; position: relative; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    transition: all 0.3s ease;
   }
-  #map { width: 100%; height: 220px; background: #1a1a1a; cursor: pointer; }
+  .map-card.fullscreen {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 99999; border-radius: 0; margin-bottom: 0;
+  }
+  #map { width: 100%; height: 220px; background: #1a1a1a; cursor: pointer; transition: height 0.3s ease; }
+  .map-card.fullscreen #map { height: 100vh; }
+
+  /* MAP CONTROLS OVERLAY */
+  .map-controls {
+    position: absolute; top: 10px; right: 10px; z-index: 1000;
+    display: flex; gap: 8px;
+  }
+  .map-ctrl-btn {
+    background: rgba(13, 13, 13, 0.85); border: 1px solid var(--gold-1);
+    color: var(--gold-2); border-radius: var(--radius-sm); padding: 6px 10px;
+    font-size: 12px; font-weight: 600; cursor: pointer; backdrop-filter: blur(4px);
+    display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+  .map-ctrl-btn:active { transform: scale(0.95); }
 
   /* FARE CALC BOX */
   .calc-box {
@@ -114,9 +133,9 @@
   .field-error-msg{ display:none; font-size: 11px; color: var(--danger); margin-top: 5px; }
   .field.has-error .field-error-msg{ display:block; }
 
-  .fav-chips { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
+  .fav-chips { display: flex; gap: 6px; margin-bottom: 12px; }
   .fav-chip {
-    font-size: 11px; padding: 5px 10px; border-radius: 100px;
+    font-size: 12px; padding: 6px 12px; border-radius: 100px;
     border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
     color: var(--text-muted); cursor: pointer; white-space: nowrap;
   }
@@ -146,7 +165,7 @@
     background: #1c1c1c; border: 1px solid var(--gold-1); color: #fff;
     padding: 12px 18px; border-radius: 12px; font-size: 13px;
     opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
-    max-width: 90%; text-align: center; z-index: 9999;
+    max-width: 90%; text-align: center; z-index: 999999;
   }
   .toast.show{ opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error{ border-color: var(--danger); }
@@ -160,7 +179,11 @@
     <p class="tagline">Reach the top</p>
   </div>
 
-  <div class="map-card">
+  <div class="map-card" id="mapCard">
+    <div class="map-controls">
+      <button type="button" class="map-ctrl-btn" id="toggleSatelliteBtn">🛰️ Спутник</button>
+      <button type="button" class="map-ctrl-btn" id="toggleFullscreenBtn">⛶</button>
+    </div>
     <div id="map"></div>
   </div>
 
@@ -183,9 +206,6 @@
     <div id="distanceFieldsBlock">
       <div class="fav-chips">
         <span class="fav-chip geo-chip" id="geoLocateChip">🎯 Моя геопозиція</span>
-        <span class="fav-chip" data-addr="вул. Успенська, 138">📍 Успенська</span>
-        <span class="fav-chip" data-addr="Парк Софіївка">🌳 Софіївка</span>
-        <span class="fav-chip" data-addr="вул. Європейська, 1">🏢 Центр</span>
       </div>
 
       <div class="field" id="fromAddrField">
@@ -284,12 +304,39 @@
   let lastRouteSummary = '';
 
   const map = L.map('map').setView(UMAN_COORDS, 13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+  const streetLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+  const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+
+  streetLayer.addTo(map);
+  let isSatellite = false;
+
+  const toggleSatelliteBtn = document.getElementById('toggleSatelliteBtn');
+  toggleSatelliteBtn.addEventListener('click', () => {
+    if (isSatellite) {
+      map.removeLayer(satLayer);
+      streetLayer.addTo(map);
+      toggleSatelliteBtn.innerHTML = '🛰️ Спутник';
+      isSatellite = false;
+    } else {
+      map.removeLayer(streetLayer);
+      satLayer.addTo(map);
+      toggleSatelliteBtn.innerHTML = '🗺️ Карта';
+      isSatellite = true;
+    }
+  });
+
+  const mapCard = document.getElementById('mapCard');
+  const toggleFullscreenBtn = document.getElementById('toggleFullscreenBtn');
+
+  toggleFullscreenBtn.addEventListener('click', () => {
+    mapCard.classList.toggle('fullscreen');
+    setTimeout(() => { map.invalidateSize(); }, 300);
+  });
 
   let markers = [];
   let routePolyline = null;
 
-  // PASSENGERS SELECTOR
   const paxBtns = document.querySelectorAll('.pax-btn');
   paxBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -299,7 +346,6 @@
     });
   });
 
-  // LOCAL STORAGE LOAD
   function loadSavedUserData() {
     const savedName = localStorage.getItem('apex_client_name');
     const savedPhone = localStorage.getItem('apex_client_phone');
@@ -371,7 +417,6 @@
     document.getElementById('priceText').innerText = `${total} ₴`;
   }
 
-  // GEOLOCATION & REVERSE GEOCODING
   async function reverseGeocode(lat, lng) {
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=uk`);
@@ -446,21 +491,6 @@
   document.getElementById('locateBtn').addEventListener('click', getUserLocation);
   document.getElementById('locateHourlyBtn').addEventListener('click', getUserLocation);
   document.getElementById('geoLocateChip').addEventListener('click', getUserLocation);
-
-  // CHIPS & STOPS
-  document.querySelectorAll('.fav-chip:not(.geo-chip)').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const addr = chip.dataset.addr;
-      if (!document.getElementById('fromAddr').value) {
-        document.getElementById('fromAddr').value = addr;
-        clearFieldError('fromAddrField');
-      } else {
-        document.getElementById('toAddr').value = addr;
-        clearFieldError('toAddrField');
-      }
-      handleAddressInput();
-    });
-  });
 
   const addStopBtn = document.getElementById('addStopBtn');
   const viaWrap = document.getElementById('viaWrap');
