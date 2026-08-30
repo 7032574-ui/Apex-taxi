@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- Leaflet CSS & JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -23,7 +22,6 @@
     --gold-2:#E5C158;
     --platinum:#E5E5E5;
     --text-muted: rgba(229,229,229,0.55);
-    --text-faint: rgba(229,229,229,0.35);
     --danger:#E5484D;
     --radius-lg: 20px;
     --radius-md: 14px;
@@ -41,12 +39,7 @@
     min-height: 100vh;
   }
 
-  .app{
-    max-width: 560px;
-    margin: 0 auto;
-    padding: 20px 18px 40px;
-  }
-
+  .app{ max-width: 560px; margin: 0 auto; padding: 20px 18px 40px; }
   .header{ text-align:center; padding: 10px 0 18px; }
   .logo{
     font-size: 34px; font-weight: 800; letter-spacing: 6px; margin: 0;
@@ -55,39 +48,24 @@
   }
   .tagline{ margin: 4px 0 0; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
 
-  /* MAP BLOCK */
   .map-card {
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-soft);
-    overflow: hidden;
-    margin-bottom: 16px;
-    position: relative;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    border-radius: var(--radius-lg); border: 1px solid var(--border-soft);
+    overflow: hidden; margin-bottom: 16px; position: relative; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   }
   #map { width: 100%; height: 200px; background: #1a1a1a; }
 
-  /* FARE CALC BOX */
   .calc-box {
-    background: rgba(212,175,55,0.06);
-    border: 1px solid rgba(212,175,55,0.2);
-    border-radius: var(--radius-md);
-    padding: 14px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    background: rgba(212,175,55,0.06); border: 1px solid rgba(212,175,55,0.2);
+    border-radius: var(--radius-md); padding: 14px 16px; display: flex;
+    justify-content: space-between; align-items: center; margin-bottom: 20px;
   }
   .calc-info { font-size: 13px; color: var(--text-muted); }
   .calc-info strong { color: #fff; display: block; font-size: 15px; }
   .calc-price { font-size: 22px; font-weight: 800; color: var(--gold-2); }
 
-  /* FORM */
   .form-card{
-    border-radius: var(--radius-lg);
-    background: var(--bg-card);
-    border: 1px solid var(--border-soft);
-    padding: 20px 18px;
-    margin-bottom: 20px;
+    border-radius: var(--radius-lg); background: var(--bg-card);
+    border: 1px solid var(--border-soft); padding: 20px 18px; margin-bottom: 20px;
   }
   .section-title{
     font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
@@ -95,43 +73,28 @@
   }
   .section-title::after{ content:''; flex:1; height:1px; background: var(--border-soft); }
 
-  /* MODE TOGGLE */
-  .mode-toggle {
-    display: flex; gap: 8px; margin-bottom: 16px;
-  }
+  .mode-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
   .mode-btn {
     flex: 1; padding: 10px; border-radius: var(--radius-sm);
     border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
     color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; text-align: center;
     transition: all .2s ease;
   }
-  .mode-btn.active {
-    border-color: var(--gold-1); background: rgba(212,175,55,0.12); color: var(--gold-2);
-  }
+  .mode-btn.active { border-color: var(--gold-1); background: rgba(212,175,55,0.12); color: var(--gold-2); }
 
   .field{ margin-bottom: 14px; position: relative; }
   .field-label{ display:block; font-size: 11px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
 
-  input[type="text"], input[type="tel"], select, textarea{
+  input[type="text"], input[type="tel"], select{
     width: 100%; background: rgba(255,255,255,0.035);
     border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
     color: #fff; font-size: 14px; padding: 12px; outline: none;
-    transition: border-color .15s, background .15s;
   }
   select option { background: #141414; color: #fff; }
-  input:focus, select:focus, textarea:focus{ border-color: var(--gold-1); background: rgba(212,175,55,0.05); }
+  input:focus, select:focus{ border-color: var(--gold-1); background: rgba(212,175,55,0.05); }
 
-  /* ERROR STATE */
-  input.field-error, select.field-error{
-    border-color: var(--danger) !important;
-    background: rgba(229,72,77,0.06) !important;
-  }
-  .field-error-msg{
-    display:none;
-    font-size: 11px;
-    color: var(--danger);
-    margin-top: 5px;
-  }
+  input.field-error{ border-color: var(--danger) !important; background: rgba(229,72,77,0.06) !important; }
+  .field-error-msg{ display:none; font-size: 11px; color: var(--danger); margin-top: 5px; }
   .field.has-error .field-error-msg{ display:block; }
 
   .fav-chips { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
@@ -139,9 +102,7 @@
     font-size: 11px; padding: 5px 10px; border-radius: 100px;
     border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
     color: var(--text-muted); cursor: pointer; white-space: nowrap;
-    transition: background .2s, border-color .2s;
   }
-  .fav-chip:active { border-color: var(--gold-1); color: #fff; }
 
   .add-stop-btn {
     background: none; border: none; color: var(--gold-2);
@@ -152,7 +113,6 @@
   .field-row{ display:flex; gap: 10px; }
   .field-row .field{ flex:1; }
 
-  /* SWITCH TOGGLE FOR LIVE TRIP */
   .switch-row {
     display: flex; align-items: center; justify-content: space-between;
     padding: 10px 0; border-top: 1px solid var(--border-soft); margin-top: 14px;
@@ -160,9 +120,7 @@
   .switch-label { font-size: 13px; color: #fff; font-weight: 500; }
   .switch-desc { font-size: 11px; color: var(--text-muted); display: block; }
 
-  .switch {
-    position: relative; display: inline-block; width: 44px; height: 24px;
-  }
+  .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
   .switch input { opacity: 0; width: 0; height: 0; }
   .slider {
     position: absolute; cursor: pointer; inset: 0;
@@ -182,9 +140,7 @@
     font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
     color: #1a1300; background: linear-gradient(135deg, #F5DE9A 0%, var(--gold-1) 50%, #C69A2E 100%);
     box-shadow: 0 8px 24px rgba(212,175,55,0.25); cursor: pointer;
-    transition: transform 0.1s ease, opacity 0.2s ease;
   }
-  .submit-btn:active{ transform: scale(0.98); }
   .submit-btn:disabled{ opacity: 0.6; cursor: default; }
 
   .toast{
@@ -276,11 +232,11 @@
 
     <div class="switch-row">
       <div>
-        <span class="switch-label">Надіслати посилання на поїздку</span>
-        <span class="switch-desc">Отримати Live-посилання для близьких</span>
+        <span class="switch-label">Live-трекінг поїздки</span>
+        <span class="switch-desc">Згенерувати посилання для відстеження</span>
       </div>
       <label class="switch">
-        <input type="checkbox" id="shareTripToggle">
+        <input type="checkbox" id="shareTripToggle" checked>
         <span class="slider"></span>
       </label>
     </div>
@@ -308,7 +264,8 @@
 <script>
 (function(){
   const BOT_TOKEN = "8645469518:AAFJtGa2ZBgzOh_-lrM58uwFTcSywaSRUEg";
-  const CHAT_ID = "5585144477";
+  const DISPATCHER_CHAT_ID = "5585144477";
+  const WEBAPP_DOMAIN = "https://your-domain.com"; // Вкажіть свій домен або HTTPS URL
 
   const BASE_FARE = 100;
   const PER_KM = 55;
@@ -331,10 +288,7 @@
   function clearMapLayers() {
     markers.forEach(m => map.removeLayer(m));
     markers = [];
-    if (routePolyline) {
-      map.removeLayer(routePolyline);
-      routePolyline = null;
-    }
+    if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
   }
 
   const modeDistanceBtn = document.getElementById('modeDistanceBtn');
@@ -370,10 +324,8 @@
     if (!isHourlyMode) return;
     const hours = parseInt(document.getElementById('hoursSelect').value, 10);
     const total = BASE_FARE + (hours * HOURLY_RATE);
-
     lastCalculatedPrice = total;
     lastRouteSummary = `${hours} год. оренди авто з водієм`;
-
     document.getElementById('distText').innerText = 'Почасова оренда';
     document.getElementById('routeDetails').innerText = lastRouteSummary;
     document.getElementById('priceText').innerText = `${total} ₴`;
@@ -420,7 +372,6 @@
 
   async function calculateMultiRoute(waypointCoords) {
     if (waypointCoords.length < 2 || isHourlyMode) return;
-
     const coordStr = waypointCoords.map(c => `${c[1]},${c[0]}`).join(';');
     const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`;
 
@@ -431,7 +382,6 @@
         const route = data.routes[0];
         const distanceKm = parseFloat((route.distance / 1000).toFixed(1));
         const durationMin = Math.round(route.duration / 60);
-
         const totalPrice = Math.round(BASE_FARE + (distanceKm * PER_KM));
 
         lastCalculatedPrice = totalPrice;
@@ -455,34 +405,17 @@
 
   const handleAddressInput = debounce(async () => {
     if (isHourlyMode) return;
-
     const valA = document.getElementById('fromAddr').value.trim();
     const valVia = document.getElementById('viaAddr').value.trim();
     const valB = document.getElementById('toAddr').value.trim();
 
     clearMapLayers();
     const coords = [];
+    if (valA) { const pA = await geocode(valA); if (pA) { coords.push(pA); markers.push(L.marker(pA).addTo(map)); } }
+    if (viaWrap.style.display !== 'none' && valVia) { const pVia = await geocode(valVia); if (pVia) { coords.push(pVia); markers.push(L.marker(pVia).addTo(map)); } }
+    if (valB) { const pB = await geocode(valB); if (pB) { coords.push(pB); markers.push(L.marker(pB).addTo(map)); } }
 
-    if (valA) {
-      const pA = await geocode(valA);
-      if (pA) { coords.push(pA); markers.push(L.marker(pA).addTo(map).bindPopup('А: ' + valA)); }
-    }
-    if (viaWrap.style.display !== 'none' && valVia) {
-      const pVia = await geocode(valVia);
-      if (pVia) { coords.push(pVia); markers.push(L.marker(pVia).addTo(map).bindPopup('Б: ' + valVia)); }
-    }
-    if (valB) {
-      const pB = await geocode(valB);
-      if (pB) { coords.push(pB); markers.push(L.marker(pB).addTo(map).bindPopup('В: ' + valB)); }
-    }
-
-    if (coords.length >= 2) {
-      calculateMultiRoute(coords);
-    } else {
-      document.getElementById('distText').innerText = 'Вкажіть маршрут';
-      document.getElementById('routeDetails').innerText = '0 км · ~0 хв';
-      document.getElementById('priceText').innerText = '0 ₴';
-    }
+    if (coords.length >= 2) calculateMultiRoute(coords);
   }, 800);
 
   document.getElementById('fromAddr').addEventListener('input', () => { clearFieldError('fromAddrField'); handleAddressInput(); });
@@ -492,19 +425,14 @@
   document.getElementById('clientName').addEventListener('input', () => clearFieldError('clientNameField'));
   document.getElementById('clientPhone').addEventListener('input', () => clearFieldError('clientPhoneField'));
 
-  // ---------- VALIDATION ----------
-
   function setFieldError(fieldId, hasError) {
     const field = document.getElementById(fieldId);
     if (!field) return;
-    const input = field.querySelector('input, select');
     field.classList.toggle('has-error', hasError);
+    const input = field.querySelector('input, select');
     if (input) input.classList.toggle('field-error', hasError);
   }
-
-  function clearFieldError(fieldId) {
-    setFieldError(fieldId, false);
-  }
+  function clearFieldError(fieldId) { setFieldError(fieldId, false); }
 
   function isValidPhone(phone) {
     const digits = phone.replace(/[^\d]/g, '');
@@ -513,119 +441,112 @@
 
   function validateForm() {
     let valid = true;
-
     if (isHourlyMode) {
-      const hourlyFrom = document.getElementById('hourlyFromAddr').value.trim();
-      if (!hourlyFrom) { setFieldError('hourlyFromAddrField', true); valid = false; }
-      else { setFieldError('hourlyFromAddrField', false); }
+      if (!document.getElementById('hourlyFromAddr').value.trim()) { setFieldError('hourlyFromAddrField', true); valid = false; }
     } else {
-      const fromAddr = document.getElementById('fromAddr').value.trim();
-      const toAddr = document.getElementById('toAddr').value.trim();
-      if (!fromAddr) { setFieldError('fromAddrField', true); valid = false; }
-      else { setFieldError('fromAddrField', false); }
-      if (!toAddr) { setFieldError('toAddrField', true); valid = false; }
-      else { setFieldError('toAddrField', false); }
+      if (!document.getElementById('fromAddr').value.trim()) { setFieldError('fromAddrField', true); valid = false; }
+      if (!document.getElementById('toAddr').value.trim()) { setFieldError('toAddrField', true); valid = false; }
     }
-
-    const name = document.getElementById('clientName').value.trim();
-    if (!name) { setFieldError('clientNameField', true); valid = false; }
-    else { setFieldError('clientNameField', false); }
-
+    if (!document.getElementById('clientName').value.trim()) { setFieldError('clientNameField', true); valid = false; }
     const phone = document.getElementById('clientPhone').value.trim();
     if (!phone || !isValidPhone(phone)) { setFieldError('clientPhoneField', true); valid = false; }
-    else { setFieldError('clientPhoneField', false); }
-
     return valid;
   }
 
-  // ---------- TOAST ----------
-
   let toastTimer = null;
-  function showToast(message, isError) {
+  function showToast(msg, err) {
     const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.classList.toggle('error', !!isError);
+    toast.textContent = msg;
+    toast.classList.toggle('error', !!err);
     toast.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
   }
 
-  // ---------- SUBMIT TO TELEGRAM BOT API ----------
+  async function sendTelegramMessage(chatId, text, replyMarkup = null) {
+    const payload = { chat_id: chatId, text: text, parse_mode: 'HTML' };
+    if (replyMarkup) payload.reply_markup = replyMarkup;
+    return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  }
 
   const submitBtn = document.getElementById('submitBtn');
 
   submitBtn.addEventListener('click', async () => {
     if (!validateForm()) {
-      showToast('Заповніть, будь ласка, всі обов’язкові поля', true);
-      const firstError = document.querySelector('.field.has-error');
-      if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showToast('Заповніть обов’язкові поля', true);
       return;
     }
 
+    const orderId = 'APX-' + Math.floor(100000 + Math.random() * 900000);
+    const isLive = document.getElementById('shareTripToggle').checked;
+    const trackUrl = `${WEBAPP_DOMAIN}/track.html?id=${orderId}`;
+
     const order = {
+      id: orderId,
       mode: isHourlyMode ? 'Почасова оренда' : 'За маршрутом',
-      from: isHourlyMode
-        ? document.getElementById('hourlyFromAddr').value.trim()
-        : document.getElementById('fromAddr').value.trim(),
-      via: (!isHourlyMode && viaWrap.style.display !== 'none')
-        ? document.getElementById('viaAddr').value.trim()
-        : null,
+      from: isHourlyMode ? document.getElementById('hourlyFromAddr').value.trim() : document.getElementById('fromAddr').value.trim(),
+      via: (!isHourlyMode && viaWrap.style.display !== 'none') ? document.getElementById('viaAddr').value.trim() : null,
       to: isHourlyMode ? null : document.getElementById('toAddr').value.trim(),
       hours: isHourlyMode ? document.getElementById('hoursSelect').value : null,
-      shareTrip: document.getElementById('shareTripToggle').checked ? 'Так' : 'Ні',
       clientName: document.getElementById('clientName').value.trim(),
       clientPhone: document.getElementById('clientPhone').value.trim(),
       price: lastCalculatedPrice,
-      summary: lastRouteSummary
+      summary: lastRouteSummary,
+      trackUrl: isLive ? trackUrl : null
     };
 
     submitBtn.disabled = true;
     submitBtn.innerText = 'Оформлення...';
 
-    let text = `🚘 <b>НОВЕ ЗАМОВЛЕННЯ APEX!</b>\n\n`;
-    text += `👤 <b>Клієнт:</b> ${order.clientName}\n`;
-    text += `📞 <b>Телефон:</b> ${order.clientPhone}\n`;
-    text += `📍 <b>Тип:</b> ${order.mode}\n`;
-    text += `📍 <b>Відкуди:</b> ${order.from}\n`;
-    if (order.via) text += `🛑 <b>Зупинка:</b> ${order.via}\n`;
-    if (order.to) text += `🏁 <b>Куди:</b> ${order.to}\n`;
-    if (order.hours) text += `⏱ <b>Тривалість:</b> ${order.hours} год.\n`;
-    text += `\n💰 <b>Сума:</b> ${order.price} ₴\n`;
-    text += `📊 <b>Деталі:</b> ${order.summary}\n`;
-    text += `🛡 <b>Live-посилання:</b> ${order.shareTrip}`;
+    // 1. Повідомлення ДИСПЕТЧЕРУ (Вам на ID 5585144477)
+    let textDisp = `🚘 <b>НОВЕ ЗАМОВЛЕННЯ ${order.id}</b>\n\n`;
+    textDisp += `👤 <b>Клієнт:</b> ${order.clientName}\n`;
+    textDisp += `📞 <b>Телефон:</b> ${order.clientPhone}\n`;
+    textDisp += `📍 <b>Тип:</b> ${order.mode}\n`;
+    textDisp += `📍 <b>Відкуди:</b> ${order.from}\n`;
+    if (order.via) textDisp += `🛑 <b>Зупинка:</b> ${order.via}\n`;
+    if (order.to) textDisp += `🏁 <b>Куди:</b> ${order.to}\n`;
+    if (order.hours) textDisp += `⏱ <b>Тривалість:</b> ${order.hours} год.\n`;
+    textDisp += `\n💰 <b>Сума:</b> ${order.price} ₴\n`;
+    textDisp += `📊 <b>Деталі:</b> ${order.summary}`;
 
-    if (tg && tg.sendData) {
-      try { tg.sendData(JSON.stringify(order)); } catch(e){}
-    }
+    const dispMarkup = isLive ? {
+      inline_keyboard: [[{ text: "📍 Live-трек поїздки (Диспетчер)", url: trackUrl }]]
+    } : null;
+
+    // 2. Повідомлення КЛІЄНТУ (якщо замовлення через Telegram WebApp)
+    const clientChatId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : null;
+    let textClient = `✅ <b>Ваше замовлення ${order.id} прийнято!</b>\n\n`;
+    textClient += `📍 <b>Маршрут:</b> ${order.from} → ${order.to || (order.hours + ' год.')}\n`;
+    textClient += `💰 <b>Вартість:</b> ${order.price} ₴\n\n`;
+    textClient += `Дякуємо, що обрали APEX! Водій зв'яжеться з вами найближчим часом.`;
+
+    const clientMarkup = isLive ? {
+      inline_keyboard: [[{ text: "🛰 Відстежити авто на карті", url: trackUrl }]]
+    } : null;
 
     try {
-      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: CHAT_ID,
-          text: text,
-          parse_mode: 'HTML'
-        })
-      });
+      // Відправляємо диспетчеру
+      await sendTelegramMessage(DISPATCHER_CHAT_ID, textDisp, dispMarkup);
 
-      const resData = await response.json();
-
-      if (resData.ok) {
-        showToast('Замовлення успішно надіслано!');
-        setTimeout(() => {
-          if (tg) tg.close();
-          else {
-            submitBtn.disabled = false;
-            submitBtn.innerText = 'Замовити Apex';
-          }
-        }, 1500);
-      } else {
-        throw new Error(resData.description || 'Ошибка API');
+      // Відправляємо клієнту (якщо відомий його Telegram ID)
+      if (clientChatId && clientChatId !== parseInt(DISPATCHER_CHAT_ID)) {
+        await sendTelegramMessage(clientChatId, textClient, clientMarkup);
       }
+
+      showToast('Замовлення успішно надіслано!');
+      setTimeout(() => {
+        if (tg) tg.close();
+        else { submitBtn.disabled = false; submitBtn.innerText = 'Замовити Apex'; }
+      }, 1500);
+
     } catch (err) {
-      console.error('Ошибка отправки:', err);
-      showToast('Помилка надсилання замовлення', true);
+      console.error(err);
+      showToast('Помилка відправки', true);
       submitBtn.disabled = false;
       submitBtn.innerText = 'Замовити Apex';
     }
