@@ -54,7 +54,7 @@
     border-radius: var(--radius-lg); border: 1px solid var(--border-soft);
     overflow: hidden; margin-bottom: 16px; position: relative; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   }
-  #map { width: 100%; height: 200px; background: #1a1a1a; }
+  #map { width: 100%; height: 220px; background: #1a1a1a; cursor: pointer; }
 
   /* FARE CALC BOX */
   .calc-box {
@@ -93,14 +93,16 @@
     display: flex; gap: 8px; align-items: center;
   }
 
-  input[type="text"], input[type="tel"], select{
+  input[type="text"], input[type="tel"], textarea, select{
     width: 100%; background: rgba(255,255,255,0.035);
     border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
     color: #fff; font-size: 14px; padding: 12px; outline: none;
     transition: border-color .15s, background .15s;
+    font-family: inherit;
   }
+  textarea { resize: vertical; min-height: 60px; }
   select option { background: #141414; color: #fff; }
-  input:focus, select:focus{ border-color: var(--gold-1); background: rgba(212,175,55,0.05); }
+  input:focus, textarea:focus, select:focus{ border-color: var(--gold-1); background: rgba(212,175,55,0.05); }
 
   /* LOCATE BUTTON */
   .locate-btn {
@@ -133,28 +135,6 @@
 
   .field-row{ display:flex; gap: 10px; }
   .field-row .field{ flex:1; }
-
-  .switch-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 0; border-top: 1px solid var(--border-soft); margin-top: 14px;
-  }
-  .switch-label { font-size: 13px; color: #fff; font-weight: 500; }
-  .switch-desc { font-size: 11px; color: var(--text-muted); display: block; }
-
-  .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute; cursor: pointer; inset: 0;
-    background-color: rgba(255,255,255,0.1); transition: .3s;
-    border-radius: 24px; border: 1px solid var(--border-soft);
-  }
-  .slider:before {
-    position: absolute; content: ""; height: 16px; width: 16px;
-    left: 3px; bottom: 3px; background-color: var(--text-muted);
-    transition: .3s; border-radius: 50%;
-  }
-  input:checked + .slider { background-color: rgba(212,175,55,0.3); border-color: var(--gold-1); }
-  input:checked + .slider:before { transform: translateX(20px); background-color: var(--gold-1); }
 
   .submit-btn{
     width: 100%; border: none; border-radius: var(--radius-md); padding: 16px;
@@ -256,17 +236,9 @@
       </div>
     </div>
 
-    <p class="section-title" style="margin-top:20px;">Опції безпеки</p>
-
-    <div class="switch-row">
-      <div>
-        <span class="switch-label">Live-трекінг поїздки</span>
-        <span class="switch-desc">Згенерувати посилання для відстеження</span>
-      </div>
-      <label class="switch">
-        <input type="checkbox" id="shareTripToggle" checked>
-        <span class="slider"></span>
-      </label>
+    <div class="field">
+      <label class="field-label" for="orderComment">Коментар до замовлення</label>
+      <textarea id="orderComment" placeholder="Під'їзд, під'їзні шляхи, дитяче крісло, багаж..."></textarea>
     </div>
 
     <p class="section-title" style="margin-top:20px;">Контакти</p>
@@ -293,7 +265,6 @@
 (function(){
   const BOT_TOKEN = "8645469518:AAFJtGa2ZBgzOh_-lrM58uwFTcSywaSRUEg";
   const DISPATCHER_CHAT_ID = "5585144477";
-  const WEBAPP_DOMAIN = "https://7032574-ui.github.io/Apex-taxi/";
 
   const BASE_FARE = 100;
   const PER_KM = 55;
@@ -312,6 +283,32 @@
 
   let markers = [];
   let routePolyline = null;
+
+  // ---------- LOCAL STORAGE LOAD ----------
+  function loadSavedUserData() {
+    const savedName = localStorage.getItem('apex_client_name');
+    const savedPhone = localStorage.getItem('apex_client_phone');
+    const savedFrom = localStorage.getItem('apex_last_from');
+    const savedTo = localStorage.getItem('apex_last_to');
+
+    if (savedName) document.getElementById('clientName').value = savedName;
+    if (savedPhone) document.getElementById('clientPhone').value = savedPhone;
+    if (savedFrom) document.getElementById('fromAddr').value = savedFrom;
+    if (savedTo) document.getElementById('toAddr').value = savedTo;
+
+    if (savedFrom || savedTo) {
+      handleAddressInput();
+    }
+  }
+
+  function saveUserData(name, phone, from, to) {
+    localStorage.setItem('apex_client_name', name);
+    localStorage.setItem('apex_client_phone', phone);
+    if (from) localStorage.setItem('apex_last_from', from);
+    if (to) localStorage.setItem('apex_last_to', to);
+  }
+
+  loadSavedUserData();
 
   function clearMapLayers() {
     markers.forEach(m => map.removeLayer(m));
@@ -400,7 +397,7 @@
         inputEl.value = addressName;
         clearFieldError(targetFieldId);
 
-        map.setView([lat, lng], 15);
+        map.setView([lat, lng], 16);
         handleAddressInput();
         showToast('Геолокацію визначено!');
       },
@@ -411,6 +408,27 @@
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }
+
+  // Pick address by map click
+  map.on('click', async (e) => {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+    const addressName = await reverseGeocode(lat, lng);
+
+    if (isHourlyMode) {
+      document.getElementById('hourlyFromAddr').value = addressName;
+      clearFieldError('hourlyFromAddrField');
+    } else {
+      if (!document.getElementById('fromAddr').value) {
+        document.getElementById('fromAddr').value = addressName;
+        clearFieldError('fromAddrField');
+      } else {
+        document.getElementById('toAddr').value = addressName;
+        clearFieldError('toAddrField');
+      }
+    }
+    handleAddressInput();
+  });
 
   document.getElementById('locateBtn').addEventListener('click', getUserLocation);
   document.getElementById('locateHourlyBtn').addEventListener('click', getUserLocation);
@@ -503,6 +521,7 @@
     if (valB) { const pB = await geocode(valB); if (pB) { coords.push(pB); markers.push(L.marker(pB).addTo(map)); } }
 
     if (coords.length >= 2) calculateMultiRoute(coords);
+    else if (coords.length === 1) map.setView(coords[0], 15);
   }, 800);
 
   document.getElementById('fromAddr').addEventListener('input', () => { clearFieldError('fromAddrField'); handleAddressInput(); });
@@ -550,9 +569,8 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
   }
 
-  async function sendTelegramMessage(chatId, text, replyMarkup = null) {
+  async function sendTelegramMessage(chatId, text) {
     const payload = { chat_id: chatId, text: text, parse_mode: 'HTML' };
-    if (replyMarkup) payload.reply_markup = replyMarkup;
     return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -569,8 +587,6 @@
     }
 
     const orderId = 'APX-' + Math.floor(100000 + Math.random() * 900000);
-    const isLive = document.getElementById('shareTripToggle').checked;
-    const trackUrl = `${WEBAPP_DOMAIN}/track.html?id=${orderId}`;
 
     const order = {
       id: orderId,
@@ -579,12 +595,15 @@
       via: (!isHourlyMode && viaWrap.style.display !== 'none') ? document.getElementById('viaAddr').value.trim() : null,
       to: isHourlyMode ? null : document.getElementById('toAddr').value.trim(),
       hours: isHourlyMode ? document.getElementById('hoursSelect').value : null,
+      comment: document.getElementById('orderComment').value.trim(),
       clientName: document.getElementById('clientName').value.trim(),
       clientPhone: document.getElementById('clientPhone').value.trim(),
       price: lastCalculatedPrice,
-      summary: lastRouteSummary,
-      trackUrl: isLive ? trackUrl : null
+      summary: lastRouteSummary
     };
+
+    // Save user info for future orders
+    saveUserData(order.clientName, order.clientPhone, order.from, order.to);
 
     submitBtn.disabled = true;
     submitBtn.innerText = 'Оформлення...';
@@ -593,32 +612,26 @@
     textDisp += `👤 <b>Клієнт:</b> ${order.clientName}\n`;
     textDisp += `📞 <b>Телефон:</b> ${order.clientPhone}\n`;
     textDisp += `📍 <b>Тип:</b> ${order.mode}\n`;
-    textDisp += `📍 <b>Відкуди:</b> ${order.from}\n`;
+    textDisp += `📍 <b>Звідки:</b> ${order.from}\n`;
     if (order.via) textDisp += `🛑 <b>Зупинка:</b> ${order.via}\n`;
     if (order.to) textDisp += `🏁 <b>Куди:</b> ${order.to}\n`;
     if (order.hours) textDisp += `⏱ <b>Тривалість:</b> ${order.hours} год.\n`;
+    if (order.comment) textDisp += `💬 <b>Коментар:</b> ${order.comment}\n`;
     textDisp += `\n💰 <b>Сума:</b> ${order.price} ₴\n`;
     textDisp += `📊 <b>Деталі:</b> ${order.summary}`;
-
-    const dispMarkup = isLive ? {
-      inline_keyboard: [[{ text: "📍 Live-трек поїздки (Диспетчер)", url: trackUrl }]]
-    } : null;
 
     const clientChatId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : null;
     let textClient = `✅ <b>Ваше замовлення ${order.id} прийнято!</b>\n\n`;
     textClient += `📍 <b>Маршрут:</b> ${order.from} → ${order.to || (order.hours + ' год.')}\n`;
-    textClient += `💰 <b>Вартість:</b> ${order.price} ₴\n\n`;
-    textClient += `Дякуємо, що обрали APEX! Водій зв'яжеться з вами найближчим часом.`;
-
-    const clientMarkup = isLive ? {
-      inline_keyboard: [[{ text: "🛰 Відстежити авто на карті", url: trackUrl }]]
-    } : null;
+    textClient += `💰 <b>Вартість:</b> ${order.price} ₴\n`;
+    if (order.comment) textClient += `💬 <b>Коментар:</b> ${order.comment}\n`;
+    textClient += `\nДякуємо, що обрали APEX! Водій зв'яжеться з вами найближчим часом.`;
 
     try {
-      await sendTelegramMessage(DISPATCHER_CHAT_ID, textDisp, dispMarkup);
+      await sendTelegramMessage(DISPATCHER_CHAT_ID, textDisp);
 
       if (clientChatId && clientChatId !== parseInt(DISPATCHER_CHAT_ID)) {
-        await sendTelegramMessage(clientChatId, textClient, clientMarkup);
+        await sendTelegramMessage(clientChatId, textClient);
       }
 
       showToast('Замовлення успішно надіслано!');
