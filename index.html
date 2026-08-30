@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+<!-- Leaflet CSS & JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -48,12 +49,14 @@
   }
   .tagline{ margin: 4px 0 0; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
 
+  /* MAP BLOCK */
   .map-card {
     border-radius: var(--radius-lg); border: 1px solid var(--border-soft);
     overflow: hidden; margin-bottom: 16px; position: relative; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   }
   #map { width: 100%; height: 200px; background: #1a1a1a; }
 
+  /* FARE CALC BOX */
   .calc-box {
     background: rgba(212,175,55,0.06); border: 1px solid rgba(212,175,55,0.2);
     border-radius: var(--radius-md); padding: 14px 16px; display: flex;
@@ -63,6 +66,7 @@
   .calc-info strong { color: #fff; display: block; font-size: 15px; }
   .calc-price { font-size: 22px; font-weight: 800; color: var(--gold-2); }
 
+  /* FORM */
   .form-card{
     border-radius: var(--radius-lg); background: var(--bg-card);
     border: 1px solid var(--border-soft); padding: 20px 18px; margin-bottom: 20px;
@@ -85,13 +89,27 @@
   .field{ margin-bottom: 14px; position: relative; }
   .field-label{ display:block; font-size: 11px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
 
+  .input-with-btn {
+    display: flex; gap: 8px; align-items: center;
+  }
+
   input[type="text"], input[type="tel"], select{
     width: 100%; background: rgba(255,255,255,0.035);
     border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
     color: #fff; font-size: 14px; padding: 12px; outline: none;
+    transition: border-color .15s, background .15s;
   }
   select option { background: #141414; color: #fff; }
   input:focus, select:focus{ border-color: var(--gold-1); background: rgba(212,175,55,0.05); }
+
+  /* LOCATE BUTTON */
+  .locate-btn {
+    background: rgba(212,175,55,0.12); border: 1px solid var(--gold-1);
+    color: var(--gold-2); border-radius: var(--radius-sm); padding: 12px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s ease, transform 0.1s ease; flex-shrink: 0;
+  }
+  .locate-btn:active { transform: scale(0.95); background: rgba(212,175,55,0.25); }
 
   input.field-error{ border-color: var(--danger) !important; background: rgba(229,72,77,0.06) !important; }
   .field-error-msg{ display:none; font-size: 11px; color: var(--danger); margin-top: 5px; }
@@ -102,6 +120,9 @@
     font-size: 11px; padding: 5px 10px; border-radius: 100px;
     border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
     color: var(--text-muted); cursor: pointer; white-space: nowrap;
+  }
+  .fav-chip.geo-chip {
+    border-color: rgba(212,175,55,0.4); color: var(--gold-2); background: rgba(212,175,55,0.08);
   }
 
   .add-stop-btn {
@@ -184,6 +205,7 @@
 
     <div id="distanceFieldsBlock">
       <div class="fav-chips">
+        <span class="fav-chip geo-chip" id="geoLocateChip">🎯 Моя геопозиція</span>
         <span class="fav-chip" data-addr="вул. Успенська, 138">📍 Успенська</span>
         <span class="fav-chip" data-addr="Парк Софіївка">🌳 Софіївка</span>
         <span class="fav-chip" data-addr="вул. Європейська, 1">🏢 Центр</span>
@@ -191,7 +213,10 @@
 
       <div class="field" id="fromAddrField">
         <label class="field-label" for="fromAddr">Звідки (Точка А)</label>
-        <input type="text" id="fromAddr" placeholder="Адреса подачі">
+        <div class="input-with-btn">
+          <input type="text" id="fromAddr" placeholder="Адреса подачі">
+          <button type="button" class="locate-btn" id="locateBtn" title="Визначити моє місцезнаходження">🎯</button>
+        </div>
         <span class="field-error-msg">Вкажіть адресу подачі</span>
       </div>
 
@@ -212,7 +237,10 @@
     <div id="hourlyFieldsBlock" style="display:none;">
       <div class="field" id="hourlyFromAddrField">
         <label class="field-label" for="hourlyFromAddr">Адреса подачі авто</label>
-        <input type="text" id="hourlyFromAddr" placeholder="Звідки забрати">
+        <div class="input-with-btn">
+          <input type="text" id="hourlyFromAddr" placeholder="Звідки забрати">
+          <button type="button" class="locate-btn" id="locateHourlyBtn" title="Визначити моє місцезнаходження">🎯</button>
+        </div>
         <span class="field-error-msg">Вкажіть адресу подачі авто</span>
       </div>
       <div class="field">
@@ -265,7 +293,7 @@
 (function(){
   const BOT_TOKEN = "8645469518:AAFJtGa2ZBgzOh_-lrM58uwFTcSywaSRUEg";
   const DISPATCHER_CHAT_ID = "5585144477";
-  const WEBAPP_DOMAIN = "https://your-domain.com"; // Вкажіть свій домен або HTTPS URL
+  const WEBAPP_DOMAIN = "https://your-domain.com";
 
   const BASE_FARE = 100;
   const PER_KM = 55;
@@ -331,7 +359,66 @@
     document.getElementById('priceText').innerText = `${total} ₴`;
   }
 
-  document.querySelectorAll('.fav-chip').forEach(chip => {
+  // ---------- GEOLOCATION & REVERSE GEOCODING ----------
+
+  async function reverseGeocode(lat, lng) {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=uk`);
+      const data = await res.json();
+      if (data && data.address) {
+        const road = data.address.road || data.address.street || data.address.pedestrian || '';
+        const houseNumber = data.address.house_number || '';
+        if (road) {
+          return houseNumber ? `${road}, ${houseNumber}` : road;
+        }
+      }
+      return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    } catch(e) {
+      console.error(e);
+      return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    }
+  }
+
+  function getUserLocation() {
+    const targetInputId = isHourlyMode ? 'hourlyFromAddr' : 'fromAddr';
+    const targetFieldId = isHourlyMode ? 'hourlyFromAddrField' : 'fromAddrField';
+    const inputEl = document.getElementById(targetInputId);
+
+    showToast('Визначаємо вашу геолокацію...');
+
+    if (!navigator.geolocation) {
+      showToast('Геолокація не підтримується вашим пристроєм', true);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        const addressName = await reverseGeocode(lat, lng);
+        inputEl.value = addressName;
+        clearFieldError(targetFieldId);
+
+        map.setView([lat, lng], 15);
+        handleAddressInput();
+        showToast('Геолокацію визначено!');
+      },
+      (err) => {
+        console.error(err);
+        showToast('Не вдалося отримати доступ до геолокації', true);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  document.getElementById('locateBtn').addEventListener('click', getUserLocation);
+  document.getElementById('locateHourlyBtn').addEventListener('click', getUserLocation);
+  document.getElementById('geoLocateChip').addEventListener('click', getUserLocation);
+
+  // ---------- CHIPS & STOPS ----------
+
+  document.querySelectorAll('.fav-chip:not(.geo-chip)').forEach(chip => {
     chip.addEventListener('click', () => {
       const addr = chip.dataset.addr;
       if (!document.getElementById('fromAddr').value) {
@@ -502,7 +589,6 @@
     submitBtn.disabled = true;
     submitBtn.innerText = 'Оформлення...';
 
-    // 1. Повідомлення ДИСПЕТЧЕРУ (Вам на ID 5585144477)
     let textDisp = `🚘 <b>НОВЕ ЗАМОВЛЕННЯ ${order.id}</b>\n\n`;
     textDisp += `👤 <b>Клієнт:</b> ${order.clientName}\n`;
     textDisp += `📞 <b>Телефон:</b> ${order.clientPhone}\n`;
@@ -518,7 +604,6 @@
       inline_keyboard: [[{ text: "📍 Live-трек поїздки (Диспетчер)", url: trackUrl }]]
     } : null;
 
-    // 2. Повідомлення КЛІЄНТУ (якщо замовлення через Telegram WebApp)
     const clientChatId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : null;
     let textClient = `✅ <b>Ваше замовлення ${order.id} прийнято!</b>\n\n`;
     textClient += `📍 <b>Маршрут:</b> ${order.from} → ${order.to || (order.hours + ' год.')}\n`;
@@ -530,10 +615,8 @@
     } : null;
 
     try {
-      // Відправляємо диспетчеру
       await sendTelegramMessage(DISPATCHER_CHAT_ID, textDisp, dispMarkup);
 
-      // Відправляємо клієнту (якщо відомий його Telegram ID)
       if (clientChatId && clientChatId !== parseInt(DISPATCHER_CHAT_ID)) {
         await sendTelegramMessage(clientChatId, textClient, clientMarkup);
       }
