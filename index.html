@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -295,8 +294,19 @@
   const HOURLY_RATE = 1000;
   const UMAN_COORDS = [48.7484, 30.2218];
 
+  const reverseGeocodeCache = new Map();
+
   const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-  if (tg) { tg.ready(); tg.expand(); }
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    if (tg.LocationManager && !tg.LocationManager.isInited) {
+      tg.LocationManager.init();
+    }
+    tg.onEvent('viewportChanged', () => {
+      setTimeout(() => map.invalidateSize(), 200);
+    });
+  }
 
   let isHourlyMode = false;
   let selectedPassengers = 1;
@@ -336,6 +346,7 @@
 
   let markers = [];
   let routePolyline = null;
+  let accuracyCircle = null;
 
   const paxBtns = document.querySelectorAll('.pax-btn');
   paxBtns.forEach(btn => {
@@ -367,6 +378,7 @@
     markers.forEach(m => map.removeLayer(m));
     markers = [];
     if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
+    if (accuracyCircle) { map.removeLayer(accuracyCircle); accuracyCircle = null; }
   }
 
   function resetCalculatedState() {
@@ -418,54 +430,122 @@
   }
 
   async function reverseGeocode(lat, lng) {
+    const cacheKey = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+    if (reverseGeocodeCache.has(cacheKey)) {
+      return reverseGeocodeCache.get(cacheKey);
+    }
+
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=uk`);
       const data = await res.json();
+      let formattedAddress = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
       if (data && data.address) {
         const road = data.address.road || data.address.street || data.address.pedestrian || '';
         const houseNumber = data.address.house_number || '';
         if (road) {
-          return houseNumber ? `${road}, ${houseNumber}` : road;
+          formattedAddress = houseNumber ? `${road}, ${houseNumber}` : road;
         }
       }
-      return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      reverseGeocodeCache.set(cacheKey, formattedAddress);
+      return formattedAddress;
     } catch(e) {
       console.error(e);
       return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
     }
   }
 
-  function getUserLocation() {
+  async function handleHighAccuracyPosition(lat, lng, accuracy) {
     const targetInputId = isHourlyMode ? 'hourlyFromAddr' : 'fromAddr';
     const targetFieldId = isHourlyMode ? 'hourlyFromAddrField' : 'fromAddrField';
     const inputEl = document.getElementById(targetInputId);
 
-    showToast('Визначаємо вашу геолокацію...');
+    if (accuracyCircle) map.removeLayer(accuracyCircle);
+    accuracyCircle = L.circle([lat, lng], {
+      radius: accuracy,
+      color: '#D4AF37',
+      fillColor: '#D4AF37',
+      fillOpacity: 0.15,
+      weight: 1
+    }).addTo(map);
 
-    if (!navigator.geolocation) {
-      showToast('Геолокація не підтримується', true);
+    const addressName = await reverseGeocode(lat, lng);
+    inputEl.value = addressName;
+    clearFieldError(targetFieldId);
+
+    map.setView([lat, lng], 16);
+    
+    let pickupMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    markers.push(pickupMarker);
+
+    pickupMarker.on('dragend', async (event) => {
+      const newPos = event.target.getLatLng();
+      const updatedAddress = await reverseGeocode(newPos.lat, newPos.lng);
+      inputEl.value = updatedAddress;
+      handleAddressInput();
+    });
+
+    handleAddressInput();
+
+    if (accuracy > 100) {
+      showToast(`Локація визначена (погрешність ~${Math.round(accuracy)}м). Перетягніть маркер для точності`, true);
+    } else {
+      showToast('Геолокацію визначено з високою точністю!');
+    }
+  }
+
+  function getUserLocation() {
+    showToast('Связь со спутниками GPS...');
+
+    if (tg && tg.LocationManager && tg.LocationManager.isInited && tg.LocationManager.isLocationAvailable) {
+      tg.LocationManager.getLocation((data) => {
+        if (data && data.latitude && data.longitude) {
+          handleHighAccuracyPosition(data.latitude, data.longitude, data.horizontal_accuracy || 20);
+        } else {
+          fallbackWebGeolocation();
+        }
+      });
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+    fallbackWebGeolocation();
+  }
 
-        const addressName = await reverseGeocode(lat, lng);
-        inputEl.value = addressName;
-        clearFieldError(targetFieldId);
+  function fallbackWebGeolocation() {
+    if (!navigator.geolocation) {
+      showToast('Геолокація не підтримується пристроєм', true);
+      return;
+    }
 
-        map.setView([lat, lng], 16);
-        handleAddressInput();
-        showToast('Геолокацію визначено!');
+    const geoOptions = {
+      enableHighAccuracy: true,
+      timeout: 20000,
+      maximumAge: 0
+    };
+
+    let watchId = null;
+
+    watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+
+        if (accuracy <= 50) {
+          navigator.geolocation.clearWatch(watchId);
+          handleHighAccuracyPosition(latitude, longitude, accuracy);
+        } else {
+          handleHighAccuracyPosition(latitude, longitude, accuracy);
+        }
       },
       (err) => {
+        if (watchId) navigator.geolocation.clearWatch(watchId);
         console.error(err);
-        showToast('Не вдалося отримати доступ до GPS', true);
+        showToast('Увімкніть GPS / Геолокацію в налаштуваннях телефону', true);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      geoOptions
     );
+
+    setTimeout(() => {
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+    }, 15000);
   }
 
   map.on('click', async (e) => {
@@ -558,9 +638,45 @@
 
     clearMapLayers();
     const coords = [];
-    if (valA) { const pA = await geocode(valA); if (pA) { coords.push(pA); markers.push(L.marker(pA).addTo(map)); } }
-    if (viaWrap.style.display !== 'none' && valVia) { const pVia = await geocode(valVia); if (pVia) { coords.push(pVia); markers.push(L.marker(pVia).addTo(map)); } }
-    if (valB) { const pB = await geocode(valB); if (pB) { coords.push(pB); markers.push(L.marker(pB).addTo(map)); } }
+    if (valA) { 
+      const pA = await geocode(valA); 
+      if (pA) { 
+        coords.push(pA); 
+        let mA = L.marker(pA, { draggable: true }).addTo(map);
+        mA.on('dragend', async (e) => {
+          const np = e.target.getLatLng();
+          document.getElementById('fromAddr').value = await reverseGeocode(np.lat, np.lng);
+          handleAddressInput();
+        });
+        markers.push(mA); 
+      } 
+    }
+    if (viaWrap.style.display !== 'none' && valVia) { 
+      const pVia = await geocode(valVia); 
+      if (pVia) { 
+        coords.push(pVia); 
+        let mVia = L.marker(pVia, { draggable: true }).addTo(map);
+        mVia.on('dragend', async (e) => {
+          const np = e.target.getLatLng();
+          document.getElementById('viaAddr').value = await reverseGeocode(np.lat, np.lng);
+          handleAddressInput();
+        });
+        markers.push(mVia); 
+      } 
+    }
+    if (valB) { 
+      const pB = await geocode(valB); 
+      if (pB) { 
+        coords.push(pB); 
+        let mB = L.marker(pB, { draggable: true }).addTo(map);
+        mB.on('dragend', async (e) => {
+          const np = e.target.getLatLng();
+          document.getElementById('toAddr').value = await reverseGeocode(np.lat, np.lng);
+          handleAddressInput();
+        });
+        markers.push(mB); 
+      } 
+    }
 
     if (coords.length >= 2) calculateMultiRoute(coords);
     else if (coords.length === 1) map.setView(coords[0], 15);
