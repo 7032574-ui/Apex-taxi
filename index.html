@@ -47,10 +47,10 @@
   }
   .tagline{ margin: 4px 0 0; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
 
-  /* HEADER ACTIONS / CALL BUTTONS (НАДІЙНІ ПОСИЛАННЯ) */
+  /* CALL BUTTONS */
   .header-actions{ display:flex; justify-content:center; margin-top: 12px; }
   .call-btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
     background: rgba(212,175,55,0.12); border:1px solid var(--gold-1); color: var(--gold-2);
     padding:9px 18px; border-radius:100px; font-size:13px; font-weight:600;
     cursor:pointer; font-family: inherit; outline: none; -webkit-appearance: none;
@@ -257,8 +257,8 @@
     <p class="logo">APEX</p>
     <p class="tagline">Reach the top</p>
     <div class="header-actions">
-      <!-- Нативні посилання без JS-обробників -->
-      <a href="tel:+380680215845" class="call-btn">📞 Диспетчер</a>
+      <!-- Виклик через JS-функцію відкриття номера -->
+      <button type="button" class="call-btn" onclick="makeCall('+380680215845')">📞 Диспетчер</button>
     </div>
   </div>
 
@@ -268,8 +268,8 @@
       <div class="driver-name">Максим</div>
       <div class="driver-role">Ваш водій · BYD Han 2022 Premium</div>
     </div>
-    <!-- Нативні посилання без JS-обробників -->
-    <a href="tel:+380680215845" class="call-btn small">📞 Дзвінок</a>
+    <!-- Виклик через JS-функцію відкриття номера -->
+    <button type="button" class="call-btn small" onclick="makeCall('+380680215845')">📞 Дзвінок</button>
   </div>
 
   <div class="map-card" id="mapCard">
@@ -388,6 +388,22 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// Глобальна функція для виклику дзвонилки у Telegram Web App
+function makeCall(phoneNumber) {
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  const telUri = "tel:" + phoneNumber;
+  
+  if (tg) {
+    if (typeof tg.openLink === 'function') {
+      tg.openLink(telUri);
+      return;
+    }
+  }
+  
+  // Фолбек для звичайного браузера
+  window.location.href = telUri;
+}
+
 (function(){
   const BOT_TOKEN = "8645469518:AAFJtGa2ZBgzOh_-lrM58uwFTcSywaSRUEg";
   const DISPATCHER_CHAT_ID = "5585144477";
