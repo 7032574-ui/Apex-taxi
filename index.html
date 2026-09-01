@@ -53,7 +53,7 @@
     display:inline-flex; align-items:center; gap:6px; text-decoration:none;
     background: rgba(212,175,55,0.12); border:1px solid var(--gold-1); color: var(--gold-2);
     padding:9px 18px; border-radius:100px; font-size:13px; font-weight:600;
-    cursor:pointer;
+    cursor:pointer; font-family: inherit; outline: none;
   }
   .call-btn:active{ transform: scale(0.96); background: rgba(212,175,55,0.25); }
   .call-btn.small{ padding:6px 12px; font-size:12px; }
@@ -258,7 +258,7 @@
     <p class="logo">APEX</p>
     <p class="tagline">Reach the top</p>
     <div class="header-actions">
-      <a class="call-btn" href="tel:+380680215845">📞 Диспетчер</a>
+      <button type="button" class="call-btn" onclick="makeCall('+380680215845')">📞 Диспетчер</button>
     </div>
   </div>
 
@@ -268,7 +268,7 @@
       <div class="driver-name">Максим</div>
       <div class="driver-role">Ваш водій · BYD Han 2022 Premium</div>
     </div>
-    <a class="call-btn small" href="tel:+380680215845">📞 Дзвінок</a>
+    <button type="button" class="call-btn small" onclick="makeCall('+380680215845')">📞 Дзвінок</button>
   </div>
 
   <div class="map-card" id="mapCard">
@@ -387,6 +387,16 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// Глобальна функція для здійснення виклику
+function makeCall(phoneNumber) {
+  const telUrl = 'tel:' + phoneNumber;
+  if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
+    window.Telegram.WebApp.openLink(telUrl);
+  } else {
+    window.location.href = telUrl;
+  }
+}
+
 (function(){
   const BOT_TOKEN = "8645469518:AAFJtGa2ZBgzOh_-lrM58uwFTcSywaSRUEg";
   const DISPATCHER_CHAT_ID = "5585144477";
@@ -399,9 +409,9 @@
 
   // ---- ТАРИФИ ----
   const BASE_FARE = 200;
-  const INCLUDED_KM = 3.6;
-  const PER_KM_CITY = 25;        // грн/км понад включені 3,6 км
-  const PER_KM_INTERCITY = 20;   // грн/км понад включені 3,6 км
+  const INCLUDED_KM = 1.0;        // Включено 1 км у подачу
+  const PER_KM_CITY = 25;        // грн/км понад включений 1 км
+  const PER_KM_INTERCITY = 20;   // грн/км понад включений 1 км
 
   const UMAN_COORDS = [48.7484, 30.2218];
 
@@ -475,9 +485,9 @@
     return;
   }
 
-  let pointA = null;   // { lat, lng, isGps }
-  let pointB = null;   // { lat, lng }
-  let pointVia = null; // { lat, lng }
+  let pointA = null;
+  let pointB = null;
+  let pointVia = null;
 
   const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   if (tg) {
@@ -491,8 +501,8 @@
     });
   }
 
-  let tariffType = 'city';       // 'city' | 'intercity'
-  let paymentMethod = 'cash';    // 'cash' | 'card'
+  let tariffType = 'city';       
+  let paymentMethod = 'cash';    
   let selectedPassengers = 1;
   let lastCalculatedPrice = 0;
   let lastRouteSummary = '';
@@ -578,7 +588,7 @@
       `<p>Умови ціноутворення для поїздок у межах міста:</p>
        <ul>
          <li><b>Мінімальне замовлення (подача):</b> 200 ₴</li>
-         <li><b>Включений пробіг:</b> перші 3.6 км включено у вартість подачі.</li>
+         <li><b>Включений пробіг:</b> перший 1 км включено у вартість подачі.</li>
          <li><b>Понад включений пробіг:</b> 25 ₴ / км.</li>
        </ul>
        <p style="color:var(--text-muted); font-size:12px;">Преміальний автомобіль BYD Han 2022 Premium з клімат-контролем та високим рівнем комфорту.</p>`
@@ -595,7 +605,7 @@
       '🛣 Тариф «Межгород / за містом»',
       `<p>Умови ціноутворення для міжміських поїздок та поїздок за межі міста:</p>
        <ul>
-         <li><b>Базова подача:</b> 200 ₴ (включає перші 3.6 км).</li>
+         <li><b>Базова подача:</b> 200 ₴ (включає перший 1 км).</li>
          <li><b>Понад включений пробіг:</b> 20 ₴ / км.</li>
        </ul>
        <p style="color:var(--text-muted); font-size:12px;">Оптимальний тариф для далеких поїздок, трансферів в аеропорти та міжміських сполучень.</p>`
@@ -712,7 +722,6 @@
     }
   }
 
-  // Прямий геокодинг для пошуку по всій Україні
   async function geocode(query) {
     if (!query) return null;
     try {
@@ -723,7 +732,6 @@
     return null;
   }
 
-  // Автокомпліт із глобальним пошуком вулиць та міст
   function setupAutocomplete(inputEl, listEl, onSelect) {
     let debounceTimer = null;
     let currentResults = [];
@@ -920,7 +928,6 @@
         const distanceKm = parseFloat((route.distance / 1000).toFixed(1));
         const durationMin = Math.round(route.duration / 60);
 
-        // Автоматично перемикаємо на міжміський тариф, якщо відстань більша за 25 км
         if (distanceKm > 25 && tariffType !== 'intercity') {
           tariffType = 'intercity';
           tariffIntercityBtn.classList.add('active');
