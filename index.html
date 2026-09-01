@@ -258,7 +258,7 @@
     <p class="logo">APEX</p>
     <p class="tagline">Reach the top</p>
     <div class="header-actions">
-      <button type="button" class="call-btn" onclick="makeCall('+380680215845')">📞 Диспетчер</button>
+      <button type="button" class="call-btn" id="callDispatcherBtn">📞 Диспетчер</button>
     </div>
   </div>
 
@@ -268,7 +268,7 @@
       <div class="driver-name">Максим</div>
       <div class="driver-role">Ваш водій · BYD Han 2022 Premium</div>
     </div>
-    <button type="button" class="call-btn small" onclick="makeCall('+380680215845')">📞 Дзвінок</button>
+    <button type="button" class="call-btn small" id="callDriverBtn">📞 Дзвінок</button>
   </div>
 
   <div class="map-card" id="mapCard">
@@ -387,16 +387,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// Глобальна функція для здійснення виклику
-function makeCall(phoneNumber) {
-  const telUrl = 'tel:' + phoneNumber;
-  if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
-    window.Telegram.WebApp.openLink(telUrl);
-  } else {
-    window.location.href = telUrl;
-  }
-}
-
 (function(){
   const BOT_TOKEN = "8645469518:AAFJtGa2ZBgzOh_-lrM58uwFTcSywaSRUEg";
   const DISPATCHER_CHAT_ID = "5585144477";
@@ -416,6 +406,22 @@ function makeCall(phoneNumber) {
   const UMAN_COORDS = [48.7484, 30.2218];
 
   const reverseGeocodeCache = new Map();
+
+  // Надійне здійснення виклику всередині Telegram WebApp
+  function makeCall(phoneNumber) {
+    const cleanPhone = phoneNumber.replace(/[^\d+]/g, '');
+    const tgWeb = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    
+    if (tgWeb && tgWeb.openTgLink) {
+      tgWeb.openTgLink('tel:' + cleanPhone);
+    } else {
+      window.location.href = 'tel:' + cleanPhone;
+    }
+  }
+
+  // Прив'язка обробників дзвінків
+  document.getElementById('callDispatcherBtn').addEventListener('click', () => makeCall(DISPATCHER_PHONE));
+  document.getElementById('callDriverBtn').addEventListener('click', () => makeCall(DRIVER_PHONE));
 
   function computeDistancePrice(distanceKm){
     const rate = tariffType === 'intercity' ? PER_KM_INTERCITY : PER_KM_CITY;
