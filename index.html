@@ -47,23 +47,11 @@
   }
   .tagline{ margin: 4px 0 0; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
 
-  /* CALL BUTTONS */
-  .header-actions{ display:flex; justify-content:center; margin-top: 12px; }
-  .call-btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:6px;
-    background: rgba(212,175,55,0.12); border:1px solid var(--gold-1); color: var(--gold-2);
-    padding:9px 18px; border-radius:100px; font-size:13px; font-weight:600;
-    cursor:pointer; font-family: inherit; outline: none; -webkit-appearance: none;
-    text-decoration: none;
-  }
-  .call-btn:active{ transform: scale(0.96); background: rgba(212,175,55,0.25); }
-  .call-btn.small{ padding:6px 12px; font-size:12px; }
-
   /* DRIVER CARD */
   .driver-card{
     display:flex; align-items:center; gap:12px;
     background: var(--bg-card); border:1px solid var(--border-soft); border-radius: var(--radius-md);
-    padding:12px 14px; margin-bottom:16px;
+    padding:12px 14px; margin-bottom:16px; margin-top:12px;
   }
   .driver-avatar{
     width:42px; height:42px; border-radius:50%; background: rgba(212,175,55,0.15);
@@ -257,10 +245,6 @@
   <div class="header">
     <p class="logo">APEX</p>
     <p class="tagline">Reach the top</p>
-    <div class="header-actions">
-      <!-- Надійна кнопка дзвонилки -->
-      <a href="tel:+380680215845" class="call-btn" onclick="makeCall(event, '+380680215845')">📞 Диспетчер</a>
-    </div>
   </div>
 
   <div class="driver-card">
@@ -269,8 +253,6 @@
       <div class="driver-name">Максим</div>
       <div class="driver-role">Ваш водій · BYD Han 2022 Premium</div>
     </div>
-    <!-- Надійна кнопка дзвонилки -->
-    <a href="tel:+380680215845" class="call-btn small" onclick="makeCall(event, '+380680215845')">📞 Дзвінок</a>
   </div>
 
   <div class="map-card" id="mapCard">
@@ -389,35 +371,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// Глобальна універсальна функція відкриття дзвонилки в Telegram та браузерах
-function makeCall(event, phoneNumber) {
-  if (event) event.preventDefault();
-  
-  const cleanPhone = phoneNumber.replace(/[^\d+]/g, '');
-  const telUri = 'tel:' + cleanPhone;
-  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-
-  if (tg) {
-    // 1. Офіційний метод прокидання зовнішніх протоколів у Telegram Mini App
-    if (typeof tg.openTgLink === 'function') {
-      try {
-        tg.openTgLink(telUri);
-        return;
-      } catch (e) { console.error(e); }
-    }
-    // 2. Альтернативний метод WebApp
-    if (typeof tg.openLink === 'function') {
-      try {
-        tg.openLink(telUri);
-        return;
-      } catch (e) { console.error(e); }
-    }
-  }
-
-  // 3. Фолбек для звичайного браузера або якщо WebApp API недоступне
-  window.location.href = telUri;
-}
-
 (function(){
   const BOT_TOKEN = "8645469518:AAFJtGa2ZBgzOh_-lrM58uwFTcSywaSRUEg";
   const DISPATCHER_CHAT_ID = "5585144477";
@@ -429,8 +382,7 @@ function makeCall(event, phoneNumber) {
   const CARD_NUMBER_DISPLAY = "4441 1111 3988 8162";
 
   // ---- ТАРИФИ ----
-  const BASE_FARE = 200;
-  const INCLUDED_KM = 1.0;
+  const BASE_FARE = 200; // Вартість подачі авто
   const PER_KM_CITY = 25;
   const PER_KM_INTERCITY = 20;
 
@@ -438,10 +390,10 @@ function makeCall(event, phoneNumber) {
 
   const reverseGeocodeCache = new Map();
 
+  // Розрахунок: Подача + Всі кілометри * Тариф за км (без безкоштовних кілометрів)
   function computeDistancePrice(distanceKm){
     const rate = tariffType === 'intercity' ? PER_KM_INTERCITY : PER_KM_CITY;
-    const extraKm = Math.max(0, distanceKm - INCLUDED_KM);
-    return Math.round(BASE_FARE + extraKm * rate);
+    return Math.round(BASE_FARE + (distanceKm * rate));
   }
 
   async function sendTelegramMessage(chatId, text) {
@@ -608,9 +560,8 @@ function makeCall(event, phoneNumber) {
       '🏙 Тариф «По місту»',
       `<p>Умови ціноутворення для поїздок у межах міста:</p>
        <ul>
-         <li><b>Мінімальне замовлення (подача):</b> 200 ₴</li>
-         <li><b>Включений пробіг:</b> перший 1 км включено у вартість подачі.</li>
-         <li><b>Понад включений пробіг:</b> 25 ₴ / км.</li>
+         <li><b>Подача авто:</b> 200 ₴</li>
+         <li><b>Вартість кілометра:</b> 25 ₴ / км</li>
        </ul>
        <p style="color:var(--text-muted); font-size:12px;">Преміальний автомобіль BYD Han 2022 Premium з клімат-контролем та високим рівнем комфорту.</p>`
     );
@@ -626,8 +577,8 @@ function makeCall(event, phoneNumber) {
       '🛣 Тариф «Межгород / за містом»',
       `<p>Умови ціноутворення для міжміських поїздок та поїздок за межі міста:</p>
        <ul>
-         <li><b>Базова подача:</b> 200 ₴ (включає перший 1 км).</li>
-         <li><b>Понад включений пробіг:</b> 20 ₴ / км.</li>
+         <li><b>Подача авто:</b> 200 ₴</li>
+         <li><b>Вартість кілометра:</b> 20 ₴ / км</li>
        </ul>
        <p style="color:var(--text-muted); font-size:12px;">Оптимальний тариф для далеких поїздок, трансферів в аеропорти та міжміських сполучень.</p>`
     );
