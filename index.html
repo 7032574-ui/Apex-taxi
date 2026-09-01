@@ -54,6 +54,7 @@
     background: rgba(212,175,55,0.12); border:1px solid var(--gold-1); color: var(--gold-2);
     padding:9px 18px; border-radius:100px; font-size:13px; font-weight:600;
     cursor:pointer; font-family: inherit; outline: none; -webkit-appearance: none;
+    text-decoration: none;
   }
   .call-btn:active{ transform: scale(0.96); background: rgba(212,175,55,0.25); }
   .call-btn.small{ padding:6px 12px; font-size:12px; }
@@ -257,8 +258,8 @@
     <p class="logo">APEX</p>
     <p class="tagline">Reach the top</p>
     <div class="header-actions">
-      <!-- Виклик через JS-функцію відкриття номера -->
-      <button type="button" class="call-btn" onclick="makeCall('+380680215845')">📞 Диспетчер</button>
+      <!-- Надійна кнопка дзвонилки -->
+      <a href="tel:+380680215845" class="call-btn" onclick="makeCall(event, '+380680215845')">📞 Диспетчер</a>
     </div>
   </div>
 
@@ -268,8 +269,8 @@
       <div class="driver-name">Максим</div>
       <div class="driver-role">Ваш водій · BYD Han 2022 Premium</div>
     </div>
-    <!-- Виклик через JS-функцію відкриття номера -->
-    <button type="button" class="call-btn small" onclick="makeCall('+380680215845')">📞 Дзвінок</button>
+    <!-- Надійна кнопка дзвонилки -->
+    <a href="tel:+380680215845" class="call-btn small" onclick="makeCall(event, '+380680215845')">📞 Дзвінок</a>
   </div>
 
   <div class="map-card" id="mapCard">
@@ -388,19 +389,32 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// Глобальна функція для виклику дзвонилки у Telegram Web App
-function makeCall(phoneNumber) {
-  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-  const telUri = "tel:" + phoneNumber;
+// Глобальна універсальна функція відкриття дзвонилки в Telegram та браузерах
+function makeCall(event, phoneNumber) {
+  if (event) event.preventDefault();
   
+  const cleanPhone = phoneNumber.replace(/[^\d+]/g, '');
+  const telUri = 'tel:' + cleanPhone;
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
   if (tg) {
+    // 1. Офіційний метод прокидання зовнішніх протоколів у Telegram Mini App
+    if (typeof tg.openTgLink === 'function') {
+      try {
+        tg.openTgLink(telUri);
+        return;
+      } catch (e) { console.error(e); }
+    }
+    // 2. Альтернативний метод WebApp
     if (typeof tg.openLink === 'function') {
-      tg.openLink(telUri);
-      return;
+      try {
+        tg.openLink(telUri);
+        return;
+      } catch (e) { console.error(e); }
     }
   }
-  
-  // Фолбек для звичайного браузера
+
+  // 3. Фолбек для звичайного браузера або якщо WebApp API недоступне
   window.location.href = telUri;
 }
 
@@ -847,7 +861,7 @@ function makeCall(phoneNumber) {
   }
 
   function getUserLocation() {
-    showToast('Связь со спутниками GPS...');
+    showToast('Зв\'язок зі супутниками GPS...');
 
     if (tg && tg.LocationManager && tg.LocationManager.isInited && tg.LocationManager.isLocationAvailable) {
       tg.LocationManager.getLocation((data) => {
