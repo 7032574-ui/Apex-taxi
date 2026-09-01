@@ -308,7 +308,7 @@
       <div class="field" id="fromAddrField">
         <label class="field-label" for="fromAddr">Звідки (Точка А)</label>
         <div class="input-with-btn">
-          <input type="text" id="fromAddr" placeholder="Адреса подачі" autocomplete="off">
+          <input type="text" id="fromAddr" placeholder="Місто, вулиця, будинок..." autocomplete="off">
           <button type="button" class="locate-btn" id="locateBtn" title="Визначити моє місцезнаходження">🎯</button>
         </div>
         <div class="autocomplete-list" id="fromAddrList"></div>
@@ -325,7 +325,7 @@
 
       <div class="field" id="toAddrField">
         <label class="field-label" for="toAddr">Куди (Точка В)</label>
-        <input type="text" id="toAddr" placeholder="Пункт призначення" autocomplete="off">
+        <input type="text" id="toAddr" placeholder="Місто, вулиця, будинок..." autocomplete="off">
         <div class="autocomplete-list" id="toAddrList"></div>
         <span class="field-error-msg">Вкажіть пункт призначення</span>
       </div>
@@ -695,9 +695,14 @@
       if (data && data.address) {
         const road = data.address.road || data.address.street || data.address.pedestrian || '';
         const houseNumber = data.address.house_number || data.address.building || '';
-        if (road) {
-          formattedAddress = houseNumber ? `${road}, ${houseNumber}` : road;
-        }
+        const city = data.address.city || data.address.town || data.address.village || '';
+        
+        let parts = [];
+        if (road) parts.push(houseNumber ? `${road}, ${houseNumber}` : road);
+        if (city) parts.push(city);
+        
+        if (parts.length > 0) formattedAddress = parts.join(' (');
+        if (city && parts.length > 1) formattedAddress += ')';
       }
       reverseGeocodeCache.set(cacheKey, formattedAddress);
       return formattedAddress;
@@ -707,17 +712,18 @@
     }
   }
 
+  // Прямий геокодинг для пошуку по всій Україні
   async function geocode(query) {
     if (!query) return null;
-    const fullQuery = query.toLowerCase().includes('умань') ? query : `Умань, ${query}`;
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullQuery)}`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=ua&accept-language=uk&limit=1&q=${encodeURIComponent(query)}`);
       const data = await res.json();
       if (data && data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
     } catch(e) { console.error(e); }
     return null;
   }
 
+  // Автокомпліт із глобальним пошуком вулиць та міст
   function setupAutocomplete(inputEl, listEl, onSelect) {
     let debounceTimer = null;
     let currentResults = [];
@@ -727,32 +733,40 @@
       selectedFromList = false;
       clearTimeout(debounceTimer);
       const q = inputEl.value.trim();
-      if (q.length < 3) {
+      if (q.length < 2) {
         listEl.classList.remove('show');
         listEl.innerHTML = '';
         currentResults = [];
         return;
       }
+
       debounceTimer = setTimeout(async () => {
-        const fullQuery = /умань|черкас/i.test(q) ? q : `${q}, Черкаська область, Україна`;
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&accept-language=uk&countrycodes=ua&q=${encodeURIComponent(fullQuery)}`);
+          const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&accept-language=uk&countrycodes=ua&viewbox=22.13,52.37,40.22,44.38&q=${encodeURIComponent(q)}`;
+          
+          const res = await fetch(url);
           const data = await res.json();
           currentResults = data || [];
+
           if (!currentResults.length) {
             listEl.classList.remove('show');
             listEl.innerHTML = '';
             return;
           }
+
           listEl.innerHTML = currentResults.map((r, i) => {
-            const parts = (r.display_name || '').split(',');
-            const main = parts[0] || '';
-            const rest = parts.slice(1, 3).join(',').trim();
-            return `<div class="autocomplete-item" data-idx="${i}">${main}<small>${rest}</small></div>`;
+            const addr = r.address || {};
+            const mainTitle = r.display_name.split(',')[0] || '';
+            const city = addr.city || addr.town || addr.village || addr.state || '';
+            const region = addr.county || addr.state || '';
+            const subtitle = [city, region].filter(Boolean).join(', ');
+
+            return `<div class="autocomplete-item" data-idx="${i}">${mainTitle}<small>${subtitle}</small></div>`;
           }).join('');
+
           listEl.classList.add('show');
         } catch (e) { console.error(e); }
-      }, 350);
+      }, 300);
     });
 
     listEl.addEventListener('mousedown', (e) => {
@@ -762,7 +776,13 @@
       const r = currentResults[idx];
       if (!r) return;
       selectedFromList = true;
-      inputEl.value = r.display_name;
+      
+      const addr = r.address || {};
+      const street = addr.road || addr.pedestrian || addr.suburb || r.display_name.split(',')[0];
+      const house = addr.house_number ? `, ${addr.house_number}` : '';
+      const city = addr.city || addr.town || addr.village ? ` (${addr.city || addr.town || addr.village})` : '';
+      
+      inputEl.value = `${street}${house}${city}`;
       listEl.classList.remove('show');
       onSelect(parseFloat(r.lat), parseFloat(r.lon));
     });
@@ -899,6 +919,14 @@
         const route = data.routes[0];
         const distanceKm = parseFloat((route.distance / 1000).toFixed(1));
         const durationMin = Math.round(route.duration / 60);
+
+        // Автоматично перемикаємо на міжміський тариф, якщо відстань більша за 25 км
+        if (distanceKm > 25 && tariffType !== 'intercity') {
+          tariffType = 'intercity';
+          tariffIntercityBtn.classList.add('active');
+          tariffCityBtn.classList.remove('active');
+        }
+
         const totalPrice = computeDistancePrice(distanceKm);
 
         lastCalculatedPrice = totalPrice;
