@@ -128,6 +128,7 @@
     transition: all .2s ease;
   }
   .mode-btn.active, .pax-btn.active { border-color: var(--gold-1); background: rgba(212,175,55,0.12); color: var(--gold-2); }
+  .mode-btn.static-btn { cursor: default; border-color: var(--gold-1); background: rgba(212,175,55,0.12); color: var(--gold-2); }
 
   .field{ margin-bottom: 14px; position: relative; }
   .field-label{ display:block; font-size: 11px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
@@ -157,7 +158,7 @@
   .field-error-msg{ display:none; font-size: 11px; color: var(--danger); margin-top: 5px; }
   .field.has-error .field-error-msg{ display:block; }
 
-  /* AUTOCOMPLETE DROPDOWN (Google-Maps-style suggestions) */
+  /* AUTOCOMPLETE DROPDOWN */
   .autocomplete-list{
     position:absolute; left:0; right:0; top:100%; margin-top:4px;
     background:#161616; border:1px solid var(--border-soft); border-radius: var(--radius-sm);
@@ -223,6 +224,31 @@
   }
   .toast.show{ opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error{ border-color: var(--danger); }
+
+  /* MODAL POPUP FOR TARIFF INFO */
+  .modal-overlay {
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(5px);
+    z-index: 100000; display: flex; align-items: center; justify-content: center;
+    padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal-content {
+    background: #161616; border: 1px solid var(--gold-1);
+    border-radius: var(--radius-lg); padding: 22px 20px; max-width: 420px; width: 100%;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.8); transform: translateY(10px); transition: transform 0.25s ease;
+  }
+  .modal-overlay.active .modal-content { transform: translateY(0); }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--gold-2); margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .modal-body { font-size: 13px; color: var(--platinum); line-height: 1.5; margin-bottom: 20px; }
+  .modal-body ul { margin: 8px 0; padding-left: 18px; }
+  .modal-body li { margin-bottom: 6px; }
+  .modal-close-btn {
+    width: 100%; padding: 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--gold-1); background: rgba(212,175,55,0.15);
+    color: var(--gold-2); font-weight: 600; font-size: 13px; cursor: pointer; text-align: center;
+  }
+  .modal-close-btn:active { transform: scale(0.98); }
 </style>
 </head>
 <body>
@@ -265,8 +291,7 @@
     <p class="section-title">Тип поїздки</p>
 
     <div class="mode-toggle">
-      <div class="mode-btn active" id="modeDistanceBtn">🚘 За маршрутом</div>
-      <div class="mode-btn" id="modeHourlyBtn">⏱ Почасова оренда</div>
+      <div class="mode-btn static-btn">🚘 За маршрутом</div>
     </div>
 
     <p class="section-title">Тариф поїздки</p>
@@ -303,29 +328,6 @@
         <input type="text" id="toAddr" placeholder="Пункт призначення" autocomplete="off">
         <div class="autocomplete-list" id="toAddrList"></div>
         <span class="field-error-msg">Вкажіть пункт призначення</span>
-      </div>
-    </div>
-
-    <div id="hourlyFieldsBlock" style="display:none;">
-      <div class="field" id="hourlyFromAddrField">
-        <label class="field-label" for="hourlyFromAddr">Адреса подачі авто</label>
-        <div class="input-with-btn">
-          <input type="text" id="hourlyFromAddr" placeholder="Звідки забрати" autocomplete="off">
-          <button type="button" class="locate-btn" id="locateHourlyBtn" title="Визначити моє місцезнаходження">🎯</button>
-        </div>
-        <div class="autocomplete-list" id="hourlyFromAddrList"></div>
-        <span class="field-error-msg">Вкажіть адресу подачі авто</span>
-      </div>
-      <div class="field">
-        <label class="field-label" for="hoursSelect">Тривалість оренди</label>
-        <select id="hoursSelect">
-          <option value="1">1 година</option>
-          <option value="2" selected>2 години</option>
-          <option value="3">3 години</option>
-          <option value="4">4 години</option>
-          <option value="6">6 годин</option>
-          <option value="8">8 годин (Робочий день)</option>
-        </select>
       </div>
     </div>
 
@@ -371,6 +373,17 @@
   <button type="button" class="submit-btn" id="submitBtn">Замовити Apex</button>
 </div>
 
+<!-- MODAL POPUP FOR TARIFF INFO -->
+<div class="modal-overlay" id="tariffModal">
+  <div class="modal-content">
+    <h3 class="modal-title" id="modalTitle">🏙 Тариф «По місту»</h3>
+    <div class="modal-body" id="modalBody">
+      <!-- Наповнюється через JS -->
+    </div>
+    <button type="button" class="modal-close-btn" id="modalCloseBtn">Зрозуміло</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -385,27 +398,10 @@
   const CARD_NUMBER_DISPLAY = "4441 1111 3988 8162";
 
   // ---- ТАРИФИ ----
-  // Актуалізовано під ринок преміум-перевезень в Україні (аналіз 08.2026): бізнес-клас
-  // у Києві — від ~25 грн/км по місту, ~150-200 грн мінімальна подача; середній тариф
-  // таксі по Черкаській області — ~17,4 грн/км; міжміський бізнес-трансфер Черкаси-Київ
-  // (~200 км) — фіксовано від ~26 грн/км «під ключ». Для APEX (BYD Han 2022, преміум-
-  // комплектація) тримаємо рівень київського бізнес-класу — це відчутно преміальніше за
-  // звичайне таксі в Умані, але залишається конкурентним і без переплати порівняно зі
-  // столицею.
-  // Подача авто: єдина база 200 грн, у яку вже входять перші 3,6 км маршруту.
   const BASE_FARE = 200;
   const INCLUDED_KM = 3.6;
-  const PER_KM_CITY = 25;        // тариф «По місту» — грн/км понад включені 3,6 км (рівень бізнес-класу Києва)
-  const PER_KM_INTERCITY = 20;   // тариф «Межгород / за містом» — грн/км понад включені 3,6 км
-
-  // Почасова оренда — похідна від кілометражних тарифів.
-  // Припущення (можна скоригувати за потреби): у міському режимі авто в середньому
-  // долає ~15 км/год «корисного» пробігу (з очікуваннями і заторами), у міжміському —
-  // ~40 км/год (траса, менше зупинок). Погодинна ставка = ціна за км * середній пробіг/год.
-  const AVG_KMH_CITY = 15;
-  const AVG_KMH_INTERCITY = 40;
-  const HOURLY_RATE_CITY = Math.round(PER_KM_CITY * AVG_KMH_CITY);             // 375 грн/год
-  const HOURLY_RATE_INTERCITY = Math.round(PER_KM_INTERCITY * AVG_KMH_INTERCITY); // 800 грн/год
+  const PER_KM_CITY = 25;        // грн/км понад включені 3,6 км
+  const PER_KM_INTERCITY = 20;   // грн/км понад включені 3,6 км
 
   const UMAN_COORDS = [48.7484, 30.2218];
 
@@ -427,8 +423,7 @@
   }
 
   // ==========================================================
-  // РЕЖИМ СПОВІЩЕННЯ ПРО ПРИБУТТЯ (відкривається за посиланням,
-  // яке диспетчер/водій отримує в повідомленні про нове замовлення)
+  // РЕЖИМ СПОВІЩЕННЯ ПРО ПРИБУТТЯ
   // ==========================================================
   const urlParams = new URLSearchParams(location.search);
   if (urlParams.get('notify') === '1') {
@@ -477,10 +472,9 @@
         }
       });
     }
-    return; // далі звичайна логіка форми замовлення не потрібна
+    return;
   }
 
-  // Хранилище точных координат (чтобы ввод других адресов не сбрасывал GPS)
   let pointA = null;   // { lat, lng, isGps }
   let pointB = null;   // { lat, lng }
   let pointVia = null; // { lat, lng }
@@ -497,7 +491,6 @@
     });
   }
 
-  let isHourlyMode = false;
   let tariffType = 'city';       // 'city' | 'intercity'
   let paymentMethod = 'cash';    // 'cash' | 'card'
   let selectedPassengers = 1;
@@ -550,7 +543,27 @@
     });
   });
 
-  // ---- Перемикач тарифу: По місту / Межгород ----
+  // ---- Модальне вікно для інформації про тариф ----
+  const tariffModal = document.getElementById('tariffModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+  function openTariffModal(title, htmlContent) {
+    modalTitle.innerHTML = title;
+    modalBody.innerHTML = htmlContent;
+    tariffModal.classList.add('active');
+  }
+
+  modalCloseBtn.addEventListener('click', () => {
+    tariffModal.classList.remove('active');
+  });
+
+  tariffModal.addEventListener('click', (e) => {
+    if (e.target === tariffModal) tariffModal.classList.remove('active');
+  });
+
+  // ---- Перемикач тарифу та виклики інфо-вікон ----
   const tariffCityBtn = document.getElementById('tariffCityBtn');
   const tariffIntercityBtn = document.getElementById('tariffIntercityBtn');
 
@@ -559,12 +572,34 @@
     tariffCityBtn.classList.add('active');
     tariffIntercityBtn.classList.remove('active');
     recalcCurrentPrice();
+
+    openTariffModal(
+      '🏙 Тариф «По місту»',
+      `<p>Умови ціноутворення для поїздок у межах міста:</p>
+       <ul>
+         <li><b>Мінімальне замовлення (подача):</b> 200 ₴</li>
+         <li><b>Включений пробіг:</b> перші 3.6 км включено у вартість подачі.</li>
+         <li><b>Понад включений пробіг:</b> 25 ₴ / км.</li>
+       </ul>
+       <p style="color:var(--text-muted); font-size:12px;">Преміальний автомобіль BYD Han 2022 Premium з клімат-контролем та високим рівнем комфорту.</p>`
+    );
   });
+
   tariffIntercityBtn.addEventListener('click', () => {
     tariffType = 'intercity';
     tariffIntercityBtn.classList.add('active');
     tariffCityBtn.classList.remove('active');
     recalcCurrentPrice();
+
+    openTariffModal(
+      '🛣 Тариф «Межгород / за містом»',
+      `<p>Умови ціноутворення для міжміських поїздок та поїздок за межі міста:</p>
+       <ul>
+         <li><b>Базова подача:</b> 200 ₴ (включає перші 3.6 км).</li>
+         <li><b>Понад включений пробіг:</b> 20 ₴ / км.</li>
+       </ul>
+       <p style="color:var(--text-muted); font-size:12px;">Оптимальний тариф для далеких поїздок, трансферів в аеропорти та міжміських сполучень.</p>`
+    );
   });
 
   // ---- Перемикач оплати: Готівка / Карта ----
@@ -613,7 +648,7 @@
     if (savedPhone) document.getElementById('clientPhone').value = savedPhone;
   }
 
-  function saveUserData(name, phone, from, to) {
+  function saveUserData(name, phone) {
     localStorage.setItem('apex_client_name', name);
     localStorage.setItem('apex_client_phone', phone);
   }
@@ -638,57 +673,13 @@
   }
 
   function recalcCurrentPrice() {
-    if (isHourlyMode) {
-      calculateHourlyPrice();
-    } else if (lastDistanceKm != null) {
+    if (lastDistanceKm != null) {
       const totalPrice = computeDistancePrice(lastDistanceKm);
       lastCalculatedPrice = totalPrice;
       lastRouteSummary = `${lastDistanceKm} км · ~${lastDurationMin} хв`;
       document.getElementById('routeDetails').innerText = lastRouteSummary;
       document.getElementById('priceText').innerText = `${totalPrice} ₴`;
     }
-  }
-
-  const modeDistanceBtn = document.getElementById('modeDistanceBtn');
-  const modeHourlyBtn = document.getElementById('modeHourlyBtn');
-  const distanceFieldsBlock = document.getElementById('distanceFieldsBlock');
-  const hourlyFieldsBlock = document.getElementById('hourlyFieldsBlock');
-
-  modeDistanceBtn.addEventListener('click', () => {
-    isHourlyMode = false;
-    modeDistanceBtn.classList.add('active');
-    modeHourlyBtn.classList.remove('active');
-    distanceFieldsBlock.style.display = 'block';
-    hourlyFieldsBlock.style.display = 'none';
-    clearFieldError('hourlyFromAddrField');
-    updateRouteAndMap();
-  });
-
-  modeHourlyBtn.addEventListener('click', () => {
-    isHourlyMode = true;
-    modeHourlyBtn.classList.add('active');
-    modeDistanceBtn.classList.remove('active');
-    distanceFieldsBlock.style.display = 'none';
-    hourlyFieldsBlock.style.display = 'block';
-    clearFieldError('fromAddrField');
-    clearFieldError('toAddrField');
-    clearMapLayers();
-    calculateHourlyPrice();
-  });
-
-  document.getElementById('hoursSelect').addEventListener('change', calculateHourlyPrice);
-
-  function calculateHourlyPrice() {
-    if (!isHourlyMode) return;
-    const hours = parseInt(document.getElementById('hoursSelect').value, 10);
-    const rate = tariffType === 'intercity' ? HOURLY_RATE_INTERCITY : HOURLY_RATE_CITY;
-    const total = BASE_FARE + (hours * rate);
-    lastCalculatedPrice = total;
-    const tariffLabel = tariffType === 'intercity' ? 'межгород/за містом' : 'по місту';
-    lastRouteSummary = `${hours} год. оренди авто з водієм (тариф: ${tariffLabel})`;
-    document.getElementById('distText').innerText = 'Почасова оренда';
-    document.getElementById('routeDetails').innerText = lastRouteSummary;
-    document.getElementById('priceText').innerText = `${total} ₴`;
   }
 
   async function reverseGeocode(lat, lng) {
@@ -727,7 +718,6 @@
     return null;
   }
 
-  // ---- Автопідказки адреси (аналог випадаючого списку Google Maps) ----
   function setupAutocomplete(inputEl, listEl, onSelect) {
     let debounceTimer = null;
     let currentResults = [];
@@ -795,17 +785,13 @@
     });
   }
 
-  // ОБРАБОТКА ПОЛУЧЕНИЯ GPS КООРДИНАТ
   async function handleHighAccuracyPosition(lat, lng, accuracy) {
-    const targetInputId = isHourlyMode ? 'hourlyFromAddr' : 'fromAddr';
-    const targetFieldId = isHourlyMode ? 'hourlyFromAddrField' : 'fromAddrField';
-    const inputEl = document.getElementById(targetInputId);
-
+    const inputEl = document.getElementById('fromAddr');
     pointA = { lat, lng, isGps: true };
 
     const addressName = await reverseGeocode(lat, lng);
     inputEl.value = addressName;
-    clearFieldError(targetFieldId);
+    clearFieldError('fromAddrField');
 
     if (accuracyCircle) map.removeLayer(accuracyCircle);
     accuracyCircle = L.circle([lat, lng], {
@@ -864,32 +850,24 @@
     setTimeout(() => { if (watchId !== null) navigator.geolocation.clearWatch(watchId); }, 15000);
   }
 
-  // КЛИК ПО КАРТЕ — СТАВИТ ТОЧКУ A ИЛИ B
   map.on('click', async (e) => {
     const lat = e.latlng.lat;
     const lng = e.latlng.lng;
     const addressName = await reverseGeocode(lat, lng);
 
-    if (isHourlyMode) {
+    if (!pointA) {
       pointA = { lat, lng, isGps: false };
-      document.getElementById('hourlyFromAddr').value = addressName;
-      clearFieldError('hourlyFromAddrField');
+      document.getElementById('fromAddr').value = addressName;
+      clearFieldError('fromAddrField');
     } else {
-      if (!pointA) {
-        pointA = { lat, lng, isGps: false };
-        document.getElementById('fromAddr').value = addressName;
-        clearFieldError('fromAddrField');
-      } else {
-        pointB = { lat, lng };
-        document.getElementById('toAddr').value = addressName;
-        clearFieldError('toAddrField');
-      }
+      pointB = { lat, lng };
+      document.getElementById('toAddr').value = addressName;
+      clearFieldError('toAddrField');
     }
     updateRouteAndMap();
   });
 
   document.getElementById('locateBtn').addEventListener('click', getUserLocation);
-  document.getElementById('locateHourlyBtn').addEventListener('click', getUserLocation);
   document.getElementById('geoLocateChip').addEventListener('click', getUserLocation);
 
   const addStopBtn = document.getElementById('addStopBtn');
@@ -907,14 +885,10 @@
     }
   });
 
-  // ПОСТРОЕНИЕ ОПТИМАЛЬНОГО МАРШРУТА
   async function calculateMultiRoute(waypointCoords) {
-    if (waypointCoords.length < 2 || isHourlyMode) return;
+    if (waypointCoords.length < 2) return;
 
-    // Формируем координаты для OSRM
     const coordStr = waypointCoords.map(c => `${c.lng},${c.lat}`).join(';');
-
-    // radiuses и continue_straight делают привязку к дорогам и убирают петли
     const rads = waypointCoords.map(() => '150').join(';');
     const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson&radiuses=${rads}&continue_straight=true`;
 
@@ -945,12 +919,10 @@
     } catch(e) { console.error(e); }
   }
 
-  // ОБНОВЛЕНИЕ КАРТЫ И МАРКЕРОВ (ВКЛЮЧАЯ ДРАГ-ЭНД)
   async function updateRouteAndMap() {
     clearMapLayers();
     const activeCoords = [];
 
-    // Точка А
     if (pointA) {
       activeCoords.push(pointA);
       let mA = L.marker([pointA.lat, pointA.lng], { draggable: true }).addTo(map);
@@ -965,7 +937,6 @@
       });
     }
 
-    // Промежуточная точка Б
     if (viaWrap.style.display !== 'none' && pointVia) {
       activeCoords.push(pointVia);
       let mVia = L.marker([pointVia.lat, pointVia.lng], { draggable: true }).addTo(map);
@@ -980,7 +951,6 @@
       });
     }
 
-    // Точка В (Конечная)
     if (pointB) {
       activeCoords.push(pointB);
       let mB = L.marker([pointB.lat, pointB.lng], { draggable: true }).addTo(map);
@@ -995,7 +965,6 @@
       });
     }
 
-    // Расчет маршрута
     if (activeCoords.length >= 2) {
       calculateMultiRoute(activeCoords);
     } else if (activeCoords.length === 1) {
@@ -1006,7 +975,6 @@
     }
   }
 
-  // СЛУШАТЕЛИ АВТОПІДКАЗОК ДЛЯ ПОЛІВ АДРЕС
   setupAutocomplete(document.getElementById('fromAddr'), document.getElementById('fromAddrList'), (lat, lng) => {
     pointA = { lat, lng, isGps: false };
     clearFieldError('fromAddrField');
@@ -1022,11 +990,6 @@
     pointB = { lat, lng };
     clearFieldError('toAddrField');
     updateRouteAndMap();
-  });
-
-  setupAutocomplete(document.getElementById('hourlyFromAddr'), document.getElementById('hourlyFromAddrList'), (lat, lng) => {
-    pointA = { lat, lng, isGps: false };
-    clearFieldError('hourlyFromAddrField');
   });
 
   document.getElementById('clientName').addEventListener('input', () => clearFieldError('clientNameField'));
@@ -1048,12 +1011,8 @@
 
   function validateForm() {
     let valid = true;
-    if (isHourlyMode) {
-      if (!document.getElementById('hourlyFromAddr').value.trim()) { setFieldError('hourlyFromAddrField', true); valid = false; }
-    } else {
-      if (!document.getElementById('fromAddr').value.trim()) { setFieldError('fromAddrField', true); valid = false; }
-      if (!document.getElementById('toAddr').value.trim()) { setFieldError('toAddrField', true); valid = false; }
-    }
+    if (!document.getElementById('fromAddr').value.trim()) { setFieldError('fromAddrField', true); valid = false; }
+    if (!document.getElementById('toAddr').value.trim()) { setFieldError('toAddrField', true); valid = false; }
     if (!document.getElementById('clientName').value.trim()) { setFieldError('clientNameField', true); valid = false; }
     const phone = document.getElementById('clientPhone').value.trim();
     if (!phone || !isValidPhone(phone)) { setFieldError('clientPhoneField', true); valid = false; }
@@ -1074,13 +1033,12 @@
     document.getElementById('fromAddr').value = '';
     document.getElementById('viaAddr').value = '';
     document.getElementById('toAddr').value = '';
-    document.getElementById('hourlyFromAddr').value = '';
     document.getElementById('orderComment').value = '';
     viaWrap.style.display = 'none';
     addStopBtn.innerText = '+ Додати зупинку';
     pointA = null; pointB = null; pointVia = null;
 
-    ['fromAddrList','viaAddrList','toAddrList','hourlyFromAddrList'].forEach(id => {
+    ['fromAddrList','viaAddrList','toAddrList'].forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.innerHTML = ''; el.classList.remove('show'); }
     });
@@ -1113,13 +1071,12 @@
 
     const order = {
       id: orderId,
-      mode: isHourlyMode ? 'Почасова оренда' : 'За маршрутом',
+      mode: 'За маршрутом',
       tariff: tariffLabel,
       payment: paymentLabel,
-      from: isHourlyMode ? document.getElementById('hourlyFromAddr').value.trim() : document.getElementById('fromAddr').value.trim(),
-      via: (!isHourlyMode && viaWrap.style.display !== 'none') ? document.getElementById('viaAddr').value.trim() : null,
-      to: isHourlyMode ? null : document.getElementById('toAddr').value.trim(),
-      hours: isHourlyMode ? document.getElementById('hoursSelect').value : null,
+      from: document.getElementById('fromAddr').value.trim(),
+      via: (viaWrap.style.display !== 'none') ? document.getElementById('viaAddr').value.trim() : null,
+      to: document.getElementById('toAddr').value.trim(),
       passengers: selectedPassengers,
       comment: document.getElementById('orderComment').value.trim(),
       clientName: document.getElementById('clientName').value.trim(),
@@ -1128,7 +1085,7 @@
       summary: lastRouteSummary
     };
 
-    saveUserData(order.clientName, order.clientPhone, order.from, order.to);
+    saveUserData(order.clientName, order.clientPhone);
 
     submitBtn.disabled = true;
     submitBtn.innerText = 'Оформлення...';
@@ -1144,7 +1101,6 @@
     textDisp += `📍 <b>Звідки:</b> ${order.from}\n`;
     if (order.via) textDisp += `🛑 <b>Зупинка:</b> ${order.via}\n`;
     if (order.to) textDisp += `🏁 <b>Куди:</b> ${order.to}\n`;
-    if (order.hours) textDisp += `⏱ <b>Тривалість:</b> ${order.hours} год.\n`;
     if (order.comment) textDisp += `💬 <b>Коментар:</b> ${order.comment}\n`;
     textDisp += `💳 <b>Оплата:</b> ${order.payment}\n`;
     textDisp += `\n💰 <b>Сума:</b> ${order.price} ₴\n`;
@@ -1158,7 +1114,7 @@
     }
 
     let textClient = `✅ <b>Ваше замовлення ${order.id} прийнято!</b>\n\n`;
-    textClient += `📍 <b>Маршрут:</b> ${order.from} → ${order.to || (order.hours + ' год.')}\n`;
+    textClient += `📍 <b>Маршрут:</b> ${order.from} → ${order.to}\n`;
     textClient += `👨‍👩‍👧‍👦 <b>Пасажири:</b> ${order.passengers} дорос.\n`;
     textClient += `💰 <b>Вартість:</b> ${order.price} ₴\n`;
     textClient += `💳 <b>Оплата:</b> ${order.payment}\n`;
