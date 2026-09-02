@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>APEX — Преміальні перевезення</title>
+<title>APEX — Преміальне електротаксі Умані</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,6 +22,7 @@
     --platinum:#E5E5E5;
     --text-muted: rgba(229,229,229,0.55);
     --danger:#E5484D;
+    --green: #4CAF6E;
     --radius-lg: 20px;
     --radius-md: 14px;
     --radius-sm: 10px;
@@ -39,7 +40,7 @@
   }
 
   .app{ max-width: 560px; margin: 0 auto; padding: 20px 18px 40px; }
-  .header{ text-align:center; padding: 10px 0 18px; }
+  .header{ text-align:center; padding: 10px 0 18px; position: relative; }
   .logo{
     font-size: 34px; font-weight: 800; letter-spacing: 6px; margin: 0;
     background: linear-gradient(180deg, #F5DE9A 0%, var(--gold-1) 55%, #B8892C 100%);
@@ -47,11 +48,19 @@
   }
   .tagline{ margin: 4px 0 0; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
 
+  .lang-toggle-btn{
+    position: absolute; top: 6px; right: 0;
+    background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.4);
+    color: var(--gold-2); border-radius: 100px; padding: 5px 12px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px; cursor: pointer;
+  }
+  .lang-toggle-btn:active{ transform: scale(0.95); }
+
   /* DRIVER CARD */
   .driver-card{
     display:flex; align-items:center; gap:12px;
     background: var(--bg-card); border:1px solid var(--border-soft); border-radius: var(--radius-md);
-    padding:12px 14px; margin-bottom:16px; margin-top:12px;
+    padding:12px 14px; margin-bottom:14px; margin-top:12px;
   }
   .driver-avatar{
     width:42px; height:42px; border-radius:50%; background: rgba(212,175,55,0.15);
@@ -61,6 +70,26 @@
   .driver-meta{ flex:1; }
   .driver-name{ font-size:14px; font-weight:700; color:#fff; }
   .driver-role{ font-size:11px; color: var(--text-muted); margin-top:2px; }
+  .eco-badge{
+    font-size: 10px; font-weight: 700; color: var(--green); background: rgba(76,175,110,0.12);
+    border: 1px solid rgba(76,175,110,0.35); border-radius: 100px; padding: 4px 9px; white-space: nowrap;
+  }
+
+  /* ABOUT CARD */
+  .about-card{
+    background: var(--bg-card); border:1px solid var(--border-soft); border-radius: var(--radius-md);
+    padding:14px 16px; margin-bottom:14px;
+  }
+  .about-title{ font-size:14px; font-weight:700; color: var(--gold-2); margin:0 0 6px; }
+  .about-body{ font-size:12.5px; color: var(--text-muted); line-height:1.5; margin:0; }
+
+  .perks-strip{
+    display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:16px;
+  }
+  .perk-item{
+    background: rgba(255,255,255,0.02); border:1px solid var(--border-soft); border-radius: var(--radius-sm);
+    padding:9px 10px; font-size:11.5px; color: var(--platinum); line-height:1.4;
+  }
 
   /* MAP BLOCK */
   .map-card {
@@ -91,11 +120,15 @@
   .calc-box {
     background: rgba(212,175,55,0.06); border: 1px solid rgba(212,175,55,0.2);
     border-radius: var(--radius-md); padding: 14px 16px; display: flex;
-    justify-content: space-between; align-items: center; margin-bottom: 20px;
+    justify-content: space-between; align-items: center; margin-bottom: 12px;
   }
   .calc-info { font-size: 13px; color: var(--text-muted); }
   .calc-info strong { color: #fff; display: block; font-size: 15px; }
   .calc-price { font-size: 22px; font-weight: 800; color: var(--gold-2); }
+
+  .tariff-info-line{
+    font-size: 11.5px; color: var(--text-muted); margin: 0 0 18px; padding: 0 2px; line-height:1.5;
+  }
 
   /* FORM */
   .form-card{
@@ -107,29 +140,31 @@
     color: var(--gold-2); margin: 0 0 14px; display:flex; align-items:center; gap: 8px;
   }
   .section-title::after{ content:''; flex:1; height:1px; background: var(--border-soft); }
+  .info-icon{ cursor:pointer; opacity:0.85; text-transform:none; letter-spacing:0; }
+  .info-icon:active{ transform: scale(0.9); }
 
-  .mode-toggle, .passengers-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+  .mode-toggle, .passengers-toggle { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
   .mode-btn, .pax-btn {
-    flex: 1; padding: 10px; border-radius: var(--radius-sm);
+    flex: 1; min-width: 70px; padding: 10px; border-radius: var(--radius-sm);
     border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
     color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; text-align: center;
     transition: all .2s ease;
   }
   .mode-btn.active, .pax-btn.active { border-color: var(--gold-1); background: rgba(212,175,55,0.12); color: var(--gold-2); }
-  .mode-btn.static-btn { cursor: default; border-color: var(--gold-1); background: rgba(212,175,55,0.12); color: var(--gold-2); }
 
   .field{ margin-bottom: 14px; position: relative; }
   .field-label{ display:block; font-size: 11px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
 
   .input-with-btn { display: flex; gap: 8px; align-items: center; }
 
-  input[type="text"], input[type="tel"], textarea, select{
+  input[type="text"], input[type="tel"], input[type="datetime-local"], textarea, select{
     width: 100%; background: rgba(255,255,255,0.035);
     border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
     color: #fff; font-size: 14px; padding: 12px; outline: none;
     transition: border-color .15s, background .15s;
     font-family: inherit;
   }
+  input[type="datetime-local"]{ color-scheme: dark; }
   textarea { resize: vertical; min-height: 60px; }
   select option { background: #141414; color: #fff; }
   input:focus, textarea:focus, select:focus{ border-color: var(--gold-1); background: rgba(212,175,55,0.05); }
@@ -162,7 +197,7 @@
   .autocomplete-item:hover, .autocomplete-item:active{ background: rgba(212,175,55,0.12); color: var(--gold-2); }
   .autocomplete-item small{ display:block; color: var(--text-muted); font-size:11px; margin-top:2px; }
 
-  .fav-chips { display: flex; gap: 6px; margin-bottom: 12px; }
+  .fav-chips { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
   .fav-chip {
     font-size: 12px; padding: 6px 12px; border-radius: 100px;
     border: 1px solid var(--border-soft); background: rgba(255,255,255,0.02);
@@ -171,6 +206,7 @@
   .fav-chip.geo-chip {
     border-color: rgba(212,175,55,0.4); color: var(--gold-2); background: rgba(212,175,55,0.08);
   }
+  .quick-routes-label{ font-size:11px; color: var(--text-muted); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 1px; }
 
   .add-stop-btn {
     background: none; border: none; color: var(--gold-2);
@@ -180,6 +216,13 @@
 
   .field-row{ display:flex; gap: 10px; }
   .field-row .field{ flex:1; }
+
+  .checkbox-row{
+    display:flex; align-items:center; gap:10px; font-size:13px; color: var(--platinum);
+    background: rgba(255,255,255,0.02); border:1px solid var(--border-soft); border-radius: var(--radius-sm);
+    padding: 12px; cursor: pointer;
+  }
+  .checkbox-row input[type="checkbox"]{ width:18px; height:18px; accent-color: var(--gold-1); flex-shrink:0; }
 
   /* PAYMENT CARD BLOCK */
   .payment-card{
@@ -194,6 +237,20 @@
     border-radius: var(--radius-sm); padding:8px 14px; font-size:12px; font-weight:600; cursor:pointer;
   }
   .copy-card-btn:active{ transform: scale(0.96); }
+
+  /* CORPORATE + FOOTER */
+  .corporate-note{
+    background: rgba(212,175,55,0.05); border: 1px dashed rgba(212,175,55,0.35);
+    border-radius: var(--radius-md); padding: 13px 15px; margin-bottom: 16px;
+    font-size: 12.5px; color: var(--platinum); line-height: 1.5;
+  }
+  .corporate-note b{ color: var(--gold-2); }
+
+  .footer-info{
+    text-align:center; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-soft);
+    font-size: 12px; color: var(--text-muted); line-height: 1.8;
+  }
+  .footer-info a{ color: var(--gold-2); text-decoration: none; font-weight: 600; }
 
   .submit-btn{
     width: 100%; border: none; border-radius: var(--radius-md); padding: 16px;
@@ -225,6 +282,7 @@
     background: #161616; border: 1px solid var(--gold-1);
     border-radius: var(--radius-lg); padding: 22px 20px; max-width: 420px; width: 100%;
     box-shadow: 0 12px 32px rgba(0,0,0,0.8); transform: translateY(10px); transition: transform 0.25s ease;
+    max-height: 82vh; overflow-y: auto;
   }
   .modal-overlay.active .modal-content { transform: translateY(0); }
   .modal-title { font-size: 16px; font-weight: 700; color: var(--gold-2); margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
@@ -243,16 +301,30 @@
 
 <div class="app">
   <div class="header">
+    <button type="button" class="lang-toggle-btn" id="langToggleBtn">EN</button>
     <p class="logo">APEX</p>
-    <p class="tagline">Reach the top</p>
+    <p class="tagline" data-i18n="tagline">Reach the top</p>
   </div>
 
   <div class="driver-card">
     <div class="driver-avatar">🚖</div>
     <div class="driver-meta">
       <div class="driver-name">Максим</div>
-      <div class="driver-role">Ваш водій · BYD Han 2022 Premium</div>
+      <div class="driver-role" data-i18n="driverRole">Ваш водій · BYD Han 2022 Premium</div>
     </div>
+    <div class="eco-badge" data-i18n="ecoBadge">100% ЕЛЕКТРО</div>
+  </div>
+
+  <div class="about-card">
+    <p class="about-title" data-i18n="aboutTitle">Перше преміальне електротаксі Умані</p>
+    <p class="about-body" data-i18n="aboutBody">Один автомобіль — один водій. Це не парк, а особистий сервіс: BYD Han 2022 у максимальній комплектації, безшумний хід без вихлопу, клімат-контроль і Wi-Fi у салоні. Працюємо по місту, за напрямками Київ / Черкаси / Вінниця та надаємо авто з водієм на години.</p>
+  </div>
+
+  <div class="perks-strip">
+    <div class="perk-item" data-i18n="perk1">🔋 Тихий електромобіль — без запаху палива і вихлопу</div>
+    <div class="perk-item" data-i18n="perk2">🚘 Єдине авто — завжди Ви і Ваш водій, без лотереї</div>
+    <div class="perk-item" data-i18n="perk3">🤝 Договори на щомісячне обслуговування для бізнесу</div>
+    <div class="perk-item" data-i18n="perk4">👶 Дитяче крісло за запитом — безкоштовно</div>
   </div>
 
   <div class="map-card" id="mapCard">
@@ -265,96 +337,141 @@
 
   <div class="calc-box">
     <div class="calc-info">
-      <span id="distText">Вкажіть маршрут</span>
+      <span id="distText" data-i18n="distTextDefault">Вкажіть маршрут</span>
       <strong id="routeDetails">0 км · ~0 хв</strong>
     </div>
     <div class="calc-price" id="priceText">0 ₴</div>
   </div>
 
   <form id="orderForm" class="form-card" onsubmit="return false;">
-    <p class="section-title">Тип поїздки</p>
-
-    <div class="mode-toggle">
-      <div class="mode-btn static-btn">🚘 За маршрутом</div>
+    <p class="section-title" data-i18n="tripTypeTitle">Тип поїздки</p>
+    <div class="mode-toggle" id="tripModeToggle">
+      <div class="mode-btn active" id="tripModeRouteBtn" data-i18n="modeRoute">🚘 За маршрутом</div>
+      <div class="mode-btn" id="tripModeHourlyBtn" data-i18n="modeHourly">🕐 Погодинно</div>
     </div>
 
-    <p class="section-title">Тариф поїздки</p>
-    <div class="mode-toggle" id="tariffToggle">
-      <div class="mode-btn active" id="tariffCityBtn">🏙 По місту</div>
-      <div class="mode-btn" id="tariffIntercityBtn">🛣 Межгород / за містом</div>
+    <div id="routeOnlyTariff">
+      <p class="section-title" data-i18n="tariffTitle">Тариф поїздки</p>
+      <div class="mode-toggle" id="tariffToggle">
+        <div class="mode-btn active" id="tariffCityBtn" data-i18n="tariffCity">🏙 По місту</div>
+        <div class="mode-btn" id="tariffIntercityBtn" data-i18n="tariffIntercity">🛣 Межгород / за містом</div>
+      </div>
+      <p class="tariff-info-line" id="tariffInfoLine" data-i18n="tariffInfoLine">Подача 200 ₴ + від 20 ₴/км · мінімальний чек 350 ₴ · безкоштовне очікування 7 хв · ніч (23:00–06:00) +20%</p>
     </div>
 
-    <div id="distanceFieldsBlock">
-      <div class="fav-chips">
-        <span class="fav-chip geo-chip" id="geoLocateChip">🎯 Моя геопозиція</span>
+    <div id="hourlyOnlyTariff" style="display:none;">
+      <p class="section-title"><span data-i18n="hourlyTitle">Погодинний найм авто з водієм</span> <span class="info-icon" id="hourlyInfoIcon">ℹ️</span></p>
+      <div class="passengers-toggle" id="hourlyDurationToggle">
+        <div class="pax-btn active" data-hours="2">2 год</div>
+        <div class="pax-btn" data-hours="3">3 год</div>
+        <div class="pax-btn" data-hours="4">4 год</div>
+        <div class="pax-btn" data-hours="6">6 год</div>
+        <div class="pax-btn" data-hours="8">8 год</div>
       </div>
+      <p class="tariff-info-line" data-i18n="hourlyInfoLine">900 ₴/год, мінімум 2 години · для ділових зустрічей, екскурсій, подій</p>
+    </div>
 
-      <div class="field" id="fromAddrField">
-        <label class="field-label" for="fromAddr">Звідки (Точка А)</label>
-        <div class="input-with-btn">
-          <input type="text" id="fromAddr" placeholder="Місто, вулиця, будинок..." autocomplete="off">
-          <button type="button" class="locate-btn" id="locateBtn" title="Визначити моє місцезнаходження">🎯</button>
-        </div>
-        <div class="autocomplete-list" id="fromAddrList"></div>
-        <span class="field-error-msg">Вкажіть адресу подачі</span>
+    <p class="section-title" data-i18n="scheduleTitle">Час подачі</p>
+    <div class="mode-toggle" id="scheduleToggle">
+      <div class="mode-btn active" id="scheduleNowBtn" data-i18n="scheduleNow">Зараз</div>
+      <div class="mode-btn" id="scheduleLaterBtn" data-i18n="scheduleLater">Наперед</div>
+    </div>
+    <div class="field" id="scheduleDateField" style="display:none;">
+      <label class="field-label" for="scheduleDateTime" data-i18n="scheduleDateLabel">Дата і час подачі</label>
+      <input type="datetime-local" id="scheduleDateTime">
+      <span class="field-error-msg" data-i18n="errSchedule">Оберіть коректні дату й час (не в минулому)</span>
+    </div>
+
+    <div class="fav-chips">
+      <span class="fav-chip geo-chip" id="geoLocateChip" data-i18n="geoChip">🎯 Моя геопозиція</span>
+    </div>
+
+    <div class="field" id="fromAddrField">
+      <label class="field-label" for="fromAddr" data-i18n="fromLabel">Звідки (Точка А)</label>
+      <div class="input-with-btn">
+        <input type="text" id="fromAddr" data-i18n-ph="fromPh" placeholder="Місто, вулиця, будинок..." autocomplete="off">
+        <button type="button" class="locate-btn" id="locateBtn" title="Визначити моє місцезнаходження">🎯</button>
       </div>
+      <div class="autocomplete-list" id="fromAddrList"></div>
+      <span class="field-error-msg" data-i18n="errFrom">Вкажіть адресу подачі</span>
+    </div>
+
+    <div id="routeOnlyFields">
+      <p class="quick-routes-label" data-i18n="quickRoutesLabel">Швидкі напрямки</p>
+      <div class="fav-chips" id="quickRoutesRow"></div>
 
       <div id="viaWrap" class="field" style="display:none;">
-        <label class="field-label" for="viaAddr">Зупинка (Точка Б)</label>
-        <input type="text" id="viaAddr" placeholder="Проміжна адреса" autocomplete="off">
+        <label class="field-label" for="viaAddr" data-i18n="viaLabel">Зупинка (Точка Б)</label>
+        <input type="text" id="viaAddr" data-i18n-ph="viaPh" placeholder="Проміжна адреса" autocomplete="off">
         <div class="autocomplete-list" id="viaAddrList"></div>
       </div>
 
-      <button type="button" id="addStopBtn" class="add-stop-btn">+ Додати зупинку</button>
+      <button type="button" id="addStopBtn" class="add-stop-btn" data-i18n="addStop">+ Додати зупинку (+50 ₴)</button>
 
       <div class="field" id="toAddrField">
-        <label class="field-label" for="toAddr">Куди (Точка В)</label>
-        <input type="text" id="toAddr" placeholder="Місто, вулиця, будинок..." autocomplete="off">
+        <label class="field-label" for="toAddr" data-i18n="toLabel">Куди (Точка В)</label>
+        <input type="text" id="toAddr" data-i18n-ph="toPh" placeholder="Місто, вулиця, будинок..." autocomplete="off">
         <div class="autocomplete-list" id="toAddrList"></div>
-        <span class="field-error-msg">Вкажіть пункт призначення</span>
+        <span class="field-error-msg" data-i18n="errTo">Вкажіть пункт призначення</span>
       </div>
     </div>
 
-    <p class="section-title">Дорослі пасажири</p>
+    <p class="section-title" data-i18n="paxTitle">Дорослі пасажири</p>
     <div class="passengers-toggle">
-      <div class="pax-btn active" data-count="1">1 особа</div>
-      <div class="pax-btn" data-count="2">2 особи</div>
-      <div class="pax-btn" data-count="3">3 особи</div>
+      <div class="pax-btn active" data-count="1" data-i18n="pax1">1 особа</div>
+      <div class="pax-btn" data-count="2" data-i18n="pax2">2 особи</div>
+      <div class="pax-btn" data-count="3" data-i18n="pax3">3 особи</div>
     </div>
 
     <div class="field">
-      <label class="field-label" for="orderComment">Коментар до замовлення</label>
-      <textarea id="orderComment" placeholder="Під'їзд, під'їзні шляхи, дитяче крісло, багаж..."></textarea>
+      <label class="checkbox-row" for="childSeatCheckbox">
+        <input type="checkbox" id="childSeatCheckbox">
+        <span data-i18n="childSeatLabel">👶 Потрібне дитяче крісло (безкоштовно)</span>
+      </label>
     </div>
 
-    <p class="section-title" style="margin-top:20px;">Контакти</p>
+    <div class="field">
+      <label class="field-label" for="orderComment" data-i18n="commentLabel">Коментар до замовлення</label>
+      <textarea id="orderComment" data-i18n-ph="commentPh" placeholder="Під'їзд, під'їзні шляхи, багаж, побажання по маршруту..."></textarea>
+    </div>
+
+    <p class="section-title" style="margin-top:20px;" data-i18n="contactsTitle">Контакти</p>
     <div class="field-row">
       <div class="field" id="clientNameField">
-        <label class="field-label" for="clientName">Ім'я</label>
-        <input type="text" id="clientName" placeholder="Ваше ім'я">
-        <span class="field-error-msg">Вкажіть ім'я</span>
+        <label class="field-label" for="clientName" data-i18n="nameLabel">Ім'я</label>
+        <input type="text" id="clientName" data-i18n-ph="namePh" placeholder="Ваше ім'я">
+        <span class="field-error-msg" data-i18n="errName">Вкажіть ім'я</span>
       </div>
       <div class="field" id="clientPhoneField">
-        <label class="field-label" for="clientPhone">Телефон</label>
+        <label class="field-label" for="clientPhone" data-i18n="phoneLabel">Телефон</label>
         <input type="tel" id="clientPhone" placeholder="+380...">
-        <span class="field-error-msg">Невірний номер телефону</span>
+        <span class="field-error-msg" data-i18n="errPhone">Невірний номер телефону</span>
       </div>
     </div>
 
-    <p class="section-title" style="margin-top:20px;">Оплата</p>
+    <p class="section-title" style="margin-top:20px;" data-i18n="paymentTitle">Оплата</p>
     <div class="mode-toggle" id="paymentToggle">
-      <div class="mode-btn active" id="payCashBtn">💵 Готівка водію</div>
-      <div class="mode-btn" id="payCardBtn">💳 Переказ на карту</div>
+      <div class="mode-btn active" id="payCashBtn" data-i18n="payCash">💵 Готівка водію</div>
+      <div class="mode-btn" id="payCardBtn" data-i18n="payCard">💳 Переказ на карту</div>
     </div>
     <div class="payment-card" id="paymentCardBlock" style="display:none;">
-      <div class="payment-card-label">Номер картки для переказу</div>
+      <div class="payment-card-label" data-i18n="cardLabel">Номер картки для переказу</div>
       <div class="payment-card-number" id="cardNumberText">4441 1111 3988 8162</div>
       <div class="payment-card-name">Отримувач: Максим Б.</div>
-      <button type="button" class="copy-card-btn" id="copyCardBtn">📋 Скопіювати номер картки</button>
+      <button type="button" class="copy-card-btn" id="copyCardBtn" data-i18n="copyCardBtn">📋 Скопіювати номер картки</button>
+    </div>
+
+    <div class="corporate-note" data-i18n="corporateNote" style="margin-top:20px;">
+      🤝 <b>Для компаній:</b> укладаємо договір на щомісячне обслуговування — регулярні трансфери співробітників, зустріч гостей, поїздки керівництва. Дзвоніть диспетчеру, щоб обговорити умови.
     </div>
   </form>
 
-  <button type="button" class="submit-btn" id="submitBtn">Замовити Apex</button>
+  <button type="button" class="submit-btn" id="submitBtn" data-i18n="submitBtn">Замовити Apex</button>
+
+  <div class="footer-info">
+    <span data-i18n="footerHours">Працюємо щодня 07:00–23:00 · нічні поїздки за домовленістю</span><br>
+    <span data-i18n="footerDispatcher">Диспетчер:</span> <a href="tel:+380680215845">+380 68 021 58 45</a>
+  </div>
 </div>
 
 <!-- MODAL POPUP FOR TARIFF INFO -->
@@ -364,7 +481,7 @@
     <div class="modal-body" id="modalBody">
       <!-- Наповнюється через JS -->
     </div>
-    <button type="button" class="modal-close-btn" id="modalCloseBtn">Зрозуміло</button>
+    <button type="button" class="modal-close-btn" id="modalCloseBtn" data-i18n="modalClose">Зрозуміло</button>
   </div>
 </div>
 
@@ -381,19 +498,197 @@
   const CARD_NUMBER_RAW = "4441111139888162";
   const CARD_NUMBER_DISPLAY = "4441 1111 3988 8162";
 
+  // !!! БЕЗПЕКА: BOT_TOKEN зараз видно у вихідному коді сторінки будь-якому користувачу.
+  // Рекомендація: перенести sendTelegramMessage() на серверний проксі (Cloudflare Worker /
+  // Vercel Function) і викликати його з клієнта без токена в коді.
+
   // ---- ТАРИФИ ----
-  const BASE_FARE = 200; // Вартість подачі авто
-  const PER_KM_CITY = 25;
-  const PER_KM_INTERCITY = 20;
+  const BASE_FARE = 200;          // Подача авто
+  const PER_KM_CITY = 25;         // Тариф по місту, грн/км
+  const PER_KM_INTERCITY = 20;    // Тариф межгород, грн/км
+  const MIN_FARE_CITY = 350;      // Мінімальний чек по місту
+  const STOP_FEE = 50;            // Доплата за додаткову зупинку
+  const NIGHT_START_HOUR = 23;    // Нічний тариф з 23:00
+  const NIGHT_END_HOUR = 6;       // до 06:00
+  const NIGHT_MULTIPLIER = 1.2;   // +20% вночі
+  const WAIT_FREE_MIN = 7;        // Безкоштовне очікування, хв
+  const WAIT_FEE_PER_MIN = 8;     // грн/хв після безкоштовного очікування
+  const HOURLY_RATE = 900;        // грн/год погодинного найму
+  const HOURLY_MIN_HOURS = 2;
 
   const UMAN_COORDS = [48.7484, 30.2218];
 
   const reverseGeocodeCache = new Map();
 
-  // Розрахунок: Подача + Всі кілометри * Тариф за км (без безкоштовних кілометрів)
+  // ---- ПЕРЕКЛАДИ ----
+  const I18N = {
+    uk: {
+      tagline: 'Reach the top',
+      ecoBadge: '100% ЕЛЕКТРО',
+      driverRole: "Ваш водій · BYD Han 2022 Premium",
+      aboutTitle: 'Перше преміальне електротаксі Умані',
+      aboutBody: "Один автомобіль — один водій. Це не парк, а особистий сервіс: BYD Han 2022 у максимальній комплектації, безшумний хід без вихлопу, клімат-контроль і Wi-Fi у салоні. Працюємо по місту, за напрямками Київ / Черкаси / Вінниця та надаємо авто з водієм на години.",
+      perk1: '🔋 Тихий електромобіль — без запаху палива і вихлопу',
+      perk2: '🚘 Єдине авто — завжди Ви і Ваш водій, без лотереї',
+      perk3: '🤝 Договори на щомісячне обслуговування для бізнесу',
+      perk4: '👶 Дитяче крісло за запитом — безкоштовно',
+      distTextDefault: 'Вкажіть маршрут',
+      tripTypeTitle: 'Тип поїздки',
+      modeRoute: '🚘 За маршрутом',
+      modeHourly: '🕐 Погодинно',
+      tariffTitle: 'Тариф поїздки',
+      tariffCity: '🏙 По місту',
+      tariffIntercity: '🛣 Межгород / за містом',
+      tariffInfoLine: 'Подача 200 ₴ + від 20 ₴/км · мінімальний чек 350 ₴ · безкоштовне очікування 7 хв · ніч (23:00–06:00) +20%',
+      hourlyTitle: 'Погодинний найм авто з водієм',
+      hourlyInfoLine: '900 ₴/год, мінімум 2 години · для ділових зустрічей, екскурсій, подій',
+      scheduleTitle: 'Час подачі',
+      scheduleNow: 'Зараз',
+      scheduleLater: 'Наперед',
+      scheduleDateLabel: 'Дата і час подачі',
+      errSchedule: 'Оберіть коректні дату й час (не в минулому)',
+      geoChip: '🎯 Моя геопозиція',
+      fromLabel: 'Звідки (Точка А)',
+      fromPh: "Місто, вулиця, будинок...",
+      quickRoutesLabel: 'Швидкі напрямки',
+      viaLabel: 'Зупинка (Точка Б)',
+      viaPh: 'Проміжна адреса',
+      addStop: '+ Додати зупинку (+50 ₴)',
+      removeStop: '✕ Видалити зупинку',
+      toLabel: 'Куди (Точка В)',
+      toPh: "Місто, вулиця, будинок...",
+      errFrom: 'Вкажіть адресу подачі',
+      errTo: 'Вкажіть пункт призначення',
+      paxTitle: 'Дорослі пасажири',
+      pax1: '1 особа', pax2: '2 особи', pax3: '3 особи',
+      childSeatLabel: '👶 Потрібне дитяче крісло (безкоштовно)',
+      commentLabel: 'Коментар до замовлення',
+      commentPh: "Під'їзд, під'їзні шляхи, багаж, побажання по маршруту...",
+      contactsTitle: 'Контакти',
+      nameLabel: "Ім'я", namePh: 'Ваше ім\u2019я',
+      phoneLabel: 'Телефон',
+      errName: "Вкажіть ім'я", errPhone: 'Невірний номер телефону',
+      paymentTitle: 'Оплата',
+      payCash: '💵 Готівка водію', payCard: '💳 Переказ на карту',
+      cardLabel: 'Номер картки для переказу',
+      copyCardBtn: '📋 Скопіювати номер картки',
+      corporateNote: '🤝 <b>Для компаній:</b> укладаємо договір на щомісячне обслуговування — регулярні трансфери співробітників, зустріч гостей, поїздки керівництва. Дзвоніть диспетчеру, щоб обговорити умови.',
+      submitBtn: 'Замовити Apex',
+      footerHours: 'Працюємо щодня 07:00–23:00 · нічні поїздки за домовленістю',
+      footerDispatcher: 'Диспетчер:',
+      modalClose: 'Зрозуміло',
+      validationError: 'Заповніть обов\u2019язкові поля',
+      searchingRoute: 'Розраховуємо маршрут…',
+      routeNotFound: 'Не вдалося знайти адресу',
+      hourlyModeLabel: 'Погодинний найм'
+    },
+    en: {
+      tagline: 'Reach the top',
+      ecoBadge: '100% ELECTRIC',
+      driverRole: 'Your driver · BYD Han 2022 Premium',
+      aboutTitle: "Uman's first premium electric taxi",
+      aboutBody: "One car, one driver — not a fleet, a personal service: a fully-loaded BYD Han 2022, silent and exhaust-free, climate control and in-car Wi-Fi. We cover the city, routes to Kyiv / Cherkasy / Vinnytsia, and hourly hire with a driver.",
+      perk1: '🔋 Silent electric car — no fuel smell, no exhaust',
+      perk2: '🚘 One car only — always the same car and driver',
+      perk3: '🤝 Monthly service contracts for businesses',
+      perk4: '👶 Child seat on request — free of charge',
+      distTextDefault: 'Set your route',
+      tripTypeTitle: 'Trip type',
+      modeRoute: '🚘 Point to point',
+      modeHourly: '🕐 Hourly hire',
+      tariffTitle: 'Fare type',
+      tariffCity: '🏙 In city',
+      tariffIntercity: '🛣 Out of town / intercity',
+      tariffInfoLine: 'Pickup 200 UAH + from 20 UAH/km · minimum fare 350 UAH · 7 min free waiting · night (23:00–06:00) +20%',
+      hourlyTitle: 'Hourly hire with driver',
+      hourlyInfoLine: '900 UAH/hour, 2-hour minimum · for meetings, sightseeing, events',
+      scheduleTitle: 'Pickup time',
+      scheduleNow: 'Now',
+      scheduleLater: 'Later',
+      scheduleDateLabel: 'Pickup date and time',
+      errSchedule: 'Choose a valid date and time (not in the past)',
+      geoChip: '🎯 My location',
+      fromLabel: 'From (Point A)',
+      fromPh: 'City, street, building...',
+      quickRoutesLabel: 'Quick destinations',
+      viaLabel: 'Stop (Point B)',
+      viaPh: 'Intermediate address',
+      addStop: '+ Add a stop (+50 UAH)',
+      removeStop: '✕ Remove stop',
+      toLabel: 'To (Point C)',
+      toPh: 'City, street, building...',
+      errFrom: 'Please enter a pickup address',
+      errTo: 'Please enter a destination',
+      paxTitle: 'Adult passengers',
+      pax1: '1 person', pax2: '2 people', pax3: '3 people',
+      childSeatLabel: '👶 Child seat needed (free)',
+      commentLabel: 'Order comment',
+      commentPh: 'Entrance, access notes, luggage, route preferences...',
+      contactsTitle: 'Contact details',
+      nameLabel: 'Name', namePh: 'Your name',
+      phoneLabel: 'Phone',
+      errName: 'Please enter your name', errPhone: 'Invalid phone number',
+      paymentTitle: 'Payment',
+      payCash: '💵 Cash to driver', payCard: '💳 Card transfer',
+      cardLabel: 'Card number for transfer',
+      copyCardBtn: '📋 Copy card number',
+      corporateNote: '🤝 <b>For businesses:</b> we set up monthly service contracts — regular staff transfers, guest pickups, executive trips. Call the dispatcher to discuss terms.',
+      submitBtn: 'Order Apex',
+      footerHours: 'Open daily 07:00–23:00 · night rides by arrangement',
+      footerDispatcher: 'Dispatcher:',
+      modalClose: 'Got it',
+      validationError: 'Please fill in the required fields',
+      searchingRoute: 'Calculating route…',
+      routeNotFound: 'Could not find this address',
+      hourlyModeLabel: 'Hourly hire'
+    }
+  };
+
+  const QUICK_ROUTES = [
+    { key:'boryspil',  uk:'✈️ Бориспіль',  en:'✈️ Boryspil',        query:'Аеропорт Бориспіль, Київська область', isCity:false },
+    { key:'zhulyany',  uk:'✈️ Жуляни',     en:'✈️ Zhuliany',        query:'Аеропорт Жуляни, Київ', isCity:false },
+    { key:'sofiyivka', uk:'🌳 Софіївка',   en:'🌳 Sofiyivka Park',  query:'Дендрологічний парк Софіївка, Умань', isCity:true },
+    { key:'cherkasy',  uk:'🏙 Черкаси',    en:'🏙 Cherkasy',        query:'Черкаси', isCity:false },
+    { key:'vinnytsia', uk:'🏙 Вінниця',    en:'🏙 Vinnytsia',       query:'Вінниця', isCity:false }
+  ];
+
+  let currentLang = 'uk';
+  function t(key){ return (I18N[currentLang] && I18N[currentLang][key] !== undefined) ? I18N[currentLang][key] : key; }
+
+  // Розрахунок: Подача + кілометри*тариф, з мінімальним чеком, доплатою за зупинку і нічним тарифом
   function computeDistancePrice(distanceKm){
     const rate = tariffType === 'intercity' ? PER_KM_INTERCITY : PER_KM_CITY;
-    return Math.round(BASE_FARE + (distanceKm * rate));
+    let price = BASE_FARE + (distanceKm * rate);
+    if (tariffType === 'city' && price < MIN_FARE_CITY) price = MIN_FARE_CITY;
+    if (isViaActive()) price += STOP_FEE;
+    if (isNightTime(getEffectiveDate())) price = price * NIGHT_MULTIPLIER;
+    return Math.round(price);
+  }
+
+  function computeHourlyPrice(hours){
+    let price = hours * HOURLY_RATE;
+    if (isNightTime(getEffectiveDate())) price = price * NIGHT_MULTIPLIER;
+    return Math.round(price);
+  }
+
+  function isViaActive(){
+    return viaWrap && viaWrap.style.display !== 'none' && !!pointVia;
+  }
+
+  function isNightTime(date){
+    const h = date.getHours();
+    return (h >= NIGHT_START_HOUR || h < NIGHT_END_HOUR);
+  }
+
+  function getEffectiveDate(){
+    if (scheduleMode === 'later') {
+      const val = document.getElementById('scheduleDateTime').value;
+      if (val) {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) return d;
+      }
+    }
+    return new Date();
   }
 
   async function sendTelegramMessage(chatId, text) {
@@ -474,8 +769,12 @@
     });
   }
 
-  let tariffType = 'city';       
-  let paymentMethod = 'cash';    
+  let tariffType = 'city';
+  let tripMode = 'route';        // 'route' | 'hourly'
+  let scheduleMode = 'now';      // 'now' | 'later'
+  let hourlyHours = 2;
+  let childSeat = false;
+  let paymentMethod = 'cash';
   let selectedPassengers = 1;
   let lastCalculatedPrice = 0;
   let lastRouteSummary = '';
@@ -517,13 +816,17 @@
   let routePolyline = null;
   let accuracyCircle = null;
 
-  const paxBtns = document.querySelectorAll('.pax-btn');
+  const paxBtns = document.querySelectorAll('.passengers-toggle:not(#hourlyDurationToggle) .pax-btn');
   paxBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       paxBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       selectedPassengers = parseInt(btn.dataset.count, 10);
     });
+  });
+
+  document.getElementById('childSeatCheckbox').addEventListener('change', (e) => {
+    childSeat = e.target.checked;
   });
 
   // ---- Модальне вікно для інформації про тариф ----
@@ -546,6 +849,73 @@
     if (e.target === tariffModal) tariffModal.classList.remove('active');
   });
 
+  function cityModalHtml(){
+    if (currentLang === 'en') {
+      return `<p>Pricing for trips within Uman:</p>
+       <ul>
+         <li><b>Pickup fee:</b> ${BASE_FARE} UAH</li>
+         <li><b>Per km:</b> ${PER_KM_CITY} UAH/km</li>
+         <li><b>Minimum fare:</b> ${MIN_FARE_CITY} UAH</li>
+         <li><b>Extra stop:</b> +${STOP_FEE} UAH</li>
+         <li><b>Free waiting:</b> ${WAIT_FREE_MIN} min, then ${WAIT_FEE_PER_MIN} UAH/min</li>
+         <li><b>Night rides (23:00–06:00):</b> +20%</li>
+       </ul>
+       <p style="color:var(--text-muted); font-size:12px;">Premium BYD Han 2022 electric sedan, climate control, quiet ride.</p>`;
+    }
+    return `<p>Умови ціноутворення для поїздок у межах міста Умань:</p>
+     <ul>
+       <li><b>Подача авто:</b> ${BASE_FARE} ₴</li>
+       <li><b>Вартість кілометра:</b> ${PER_KM_CITY} ₴/км</li>
+       <li><b>Мінімальна вартість поїздки:</b> ${MIN_FARE_CITY} ₴</li>
+       <li><b>Додаткова зупинка:</b> +${STOP_FEE} ₴</li>
+       <li><b>Безкоштовне очікування:</b> ${WAIT_FREE_MIN} хв, далі ${WAIT_FEE_PER_MIN} ₴/хв</li>
+       <li><b>Нічний тариф (23:00–06:00):</b> +20%</li>
+     </ul>
+     <p style="color:var(--text-muted); font-size:12px;">Преміальний електричний седан BYD Han 2022, клімат-контроль, безшумна їзда.</p>`;
+  }
+
+  function intercityModalHtml(){
+    if (currentLang === 'en') {
+      return `<p>Pricing for intercity and out-of-town trips:</p>
+       <ul>
+         <li><b>Pickup fee:</b> ${BASE_FARE} UAH</li>
+         <li><b>Per km:</b> ${PER_KM_INTERCITY} UAH/km</li>
+         <li><b>Extra stop:</b> +${STOP_FEE} UAH</li>
+         <li><b>Night rides (23:00–06:00):</b> +20%</li>
+         <li><b>Note:</b> on long routes (Kyiv, Vinnytsia) a short charging stop may be needed — this is planned into the schedule in advance.</li>
+       </ul>
+       <p style="color:var(--text-muted); font-size:12px;">Best suited for airport transfers, business trips and out-of-town travel.</p>`;
+    }
+    return `<p>Умови ціноутворення для міжміських поїздок та поїздок за межі міста:</p>
+     <ul>
+       <li><b>Подача авто:</b> ${BASE_FARE} ₴</li>
+       <li><b>Вартість кілометра:</b> ${PER_KM_INTERCITY} ₴/км</li>
+       <li><b>Додаткова зупинка:</b> +${STOP_FEE} ₴</li>
+       <li><b>Нічний тариф (23:00–06:00):</b> +20%</li>
+       <li><b>Важливо:</b> на далеких маршрутах (Київ, Вінниця) можлива коротка зупинка на підзарядку — плануємо це заздалегідь при бронюванні.</li>
+     </ul>
+     <p style="color:var(--text-muted); font-size:12px;">Оптимально для трансферів в аеропорти, ділових поїздок та виїздів за місто.</p>`;
+  }
+
+  function hourlyModalHtml(){
+    if (currentLang === 'en') {
+      return `<p>Hourly hire — the car and driver stay at your disposal:</p>
+       <ul>
+         <li><b>Rate:</b> ${HOURLY_RATE} UAH/hour</li>
+         <li><b>Minimum booking:</b> ${HOURLY_MIN_HOURS} hours</li>
+         <li><b>Night rides (23:00–06:00):</b> +20%</li>
+       </ul>
+       <p style="color:var(--text-muted); font-size:12px;">Good for business meetings, city tours, weddings and events with several stops.</p>`;
+    }
+    return `<p>Погодинний найм — авто та водій у Вашому розпорядженні:</p>
+     <ul>
+       <li><b>Тариф:</b> ${HOURLY_RATE} ₴/год</li>
+       <li><b>Мінімальне бронювання:</b> ${HOURLY_MIN_HOURS} год</li>
+       <li><b>Нічний тариф (23:00–06:00):</b> +20%</li>
+     </ul>
+     <p style="color:var(--text-muted); font-size:12px;">Підходить для ділових зустрічей, екскурсій містом, весіль і подій з кількома зупинками.</p>`;
+  }
+
   // ---- Перемикач тарифу та виклики інфо-вікон ----
   const tariffCityBtn = document.getElementById('tariffCityBtn');
   const tariffIntercityBtn = document.getElementById('tariffIntercityBtn');
@@ -555,16 +925,7 @@
     tariffCityBtn.classList.add('active');
     tariffIntercityBtn.classList.remove('active');
     recalcCurrentPrice();
-
-    openTariffModal(
-      '🏙 Тариф «По місту»',
-      `<p>Умови ціноутворення для поїздок у межах міста:</p>
-       <ul>
-         <li><b>Подача авто:</b> 200 ₴</li>
-         <li><b>Вартість кілометра:</b> 25 ₴ / км</li>
-       </ul>
-       <p style="color:var(--text-muted); font-size:12px;">Преміальний автомобіль BYD Han 2022 Premium з клімат-контролем та високим рівнем комфорту.</p>`
-    );
+    openTariffModal(currentLang === 'en' ? '🏙 "In City" rate' : '🏙 Тариф «По місту»', cityModalHtml());
   });
 
   tariffIntercityBtn.addEventListener('click', () => {
@@ -572,16 +933,94 @@
     tariffIntercityBtn.classList.add('active');
     tariffCityBtn.classList.remove('active');
     recalcCurrentPrice();
+    openTariffModal(currentLang === 'en' ? '🛣 Intercity rate' : '🛣 Тариф «Межгород / за містом»', intercityModalHtml());
+  });
 
-    openTariffModal(
-      '🛣 Тариф «Межгород / за містом»',
-      `<p>Умови ціноутворення для міжміських поїздок та поїздок за межі міста:</p>
-       <ul>
-         <li><b>Подача авто:</b> 200 ₴</li>
-         <li><b>Вартість кілометра:</b> 20 ₴ / км</li>
-       </ul>
-       <p style="color:var(--text-muted); font-size:12px;">Оптимальний тариф для далеких поїздок, трансферів в аеропорти та міжміських сполучень.</p>`
-    );
+  document.getElementById('hourlyInfoIcon').addEventListener('click', () => {
+    openTariffModal(currentLang === 'en' ? '🕐 Hourly hire' : '🕐 Погодинний найм', hourlyModalHtml());
+  });
+
+  // ---- Тип поїздки: за маршрутом / погодинно ----
+  const tripModeRouteBtn = document.getElementById('tripModeRouteBtn');
+  const tripModeHourlyBtn = document.getElementById('tripModeHourlyBtn');
+  const routeOnlyTariff = document.getElementById('routeOnlyTariff');
+  const hourlyOnlyTariff = document.getElementById('hourlyOnlyTariff');
+  const routeOnlyFields = document.getElementById('routeOnlyFields');
+
+  function setTripMode(mode){
+    tripMode = mode;
+    tripModeRouteBtn.classList.toggle('active', mode === 'route');
+    tripModeHourlyBtn.classList.toggle('active', mode === 'hourly');
+    routeOnlyTariff.style.display = mode === 'route' ? '' : 'none';
+    hourlyOnlyTariff.style.display = mode === 'hourly' ? '' : 'none';
+    routeOnlyFields.style.display = mode === 'route' ? '' : 'none';
+    clearFieldError('toAddrField');
+    if (mode === 'hourly') {
+      updateHourlyPriceDisplay();
+    } else if (lastDistanceKm != null) {
+      recalcCurrentPrice();
+    } else {
+      resetCalculatedState();
+    }
+  }
+  tripModeRouteBtn.addEventListener('click', () => setTripMode('route'));
+  tripModeHourlyBtn.addEventListener('click', () => setTripMode('hourly'));
+
+  const hourlyChips = document.querySelectorAll('#hourlyDurationToggle .pax-btn');
+  hourlyChips.forEach(btn => {
+    btn.addEventListener('click', () => {
+      hourlyChips.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      hourlyHours = parseInt(btn.dataset.hours, 10);
+      updateHourlyPriceDisplay();
+    });
+  });
+
+  function updateHourlyPriceDisplay(){
+    const price = computeHourlyPrice(hourlyHours);
+    lastCalculatedPrice = price;
+    lastRouteSummary = `${hourlyHours} ${currentLang === 'en' ? 'h' : 'год'}`;
+    document.getElementById('distText').innerText = t('hourlyModeLabel');
+    document.getElementById('routeDetails').innerText = lastRouteSummary;
+    document.getElementById('priceText').innerText = `${price} ₴`;
+  }
+
+  // ---- Час подачі: зараз / наперед ----
+  const scheduleNowBtn = document.getElementById('scheduleNowBtn');
+  const scheduleLaterBtn = document.getElementById('scheduleLaterBtn');
+  const scheduleDateField = document.getElementById('scheduleDateField');
+  const scheduleDateTimeInput = document.getElementById('scheduleDateTime');
+
+  function refreshPriceForCurrentMode(){
+    if (tripMode === 'hourly') {
+      updateHourlyPriceDisplay();
+    } else if (lastDistanceKm != null) {
+      recalcCurrentPrice();
+    }
+  }
+
+  scheduleNowBtn.addEventListener('click', () => {
+    scheduleMode = 'now';
+    scheduleNowBtn.classList.add('active');
+    scheduleLaterBtn.classList.remove('active');
+    scheduleDateField.style.display = 'none';
+    refreshPriceForCurrentMode();
+  });
+
+  scheduleLaterBtn.addEventListener('click', () => {
+    scheduleMode = 'later';
+    scheduleLaterBtn.classList.add('active');
+    scheduleNowBtn.classList.remove('active');
+    scheduleDateField.style.display = 'block';
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    scheduleDateTimeInput.min = now.toISOString().slice(0, 16);
+    refreshPriceForCurrentMode();
+  });
+
+  scheduleDateTimeInput.addEventListener('change', () => {
+    clearFieldError('scheduleDateField');
+    refreshPriceForCurrentMode();
   });
 
   // ---- Перемикач оплати: Готівка / Карта ----
@@ -605,7 +1044,7 @@
   document.getElementById('copyCardBtn').addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(CARD_NUMBER_RAW);
-      showToast('Номер картки скопійовано');
+      showToast(currentLang === 'en' ? 'Card number copied' : 'Номер картки скопійовано');
     } catch (e) {
       try {
         const ta = document.createElement('textarea');
@@ -616,9 +1055,9 @@
         ta.focus(); ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
-        showToast('Номер картки скопійовано');
+        showToast(currentLang === 'en' ? 'Card number copied' : 'Номер картки скопійовано');
       } catch (err) {
-        showToast('Не вдалося скопіювати номер', true);
+        showToast(currentLang === 'en' ? 'Could not copy the number' : 'Не вдалося скопіювати номер', true);
       }
     }
   });
@@ -649,7 +1088,7 @@
     lastRouteSummary = '0 км · ~0 хв';
     lastDistanceKm = null;
     lastDurationMin = null;
-    document.getElementById('distText').innerText = 'Вкажіть маршрут';
+    document.getElementById('distText').innerText = t('distTextDefault');
     document.getElementById('routeDetails').innerText = lastRouteSummary;
     document.getElementById('priceText').innerText = '0 ₴';
   }
@@ -678,11 +1117,11 @@
         const road = data.address.road || data.address.street || data.address.pedestrian || '';
         const houseNumber = data.address.house_number || data.address.building || '';
         const city = data.address.city || data.address.town || data.address.village || '';
-        
+
         let parts = [];
         if (road) parts.push(houseNumber ? `${road}, ${houseNumber}` : road);
         if (city) parts.push(city);
-        
+
         if (parts.length > 0) formattedAddress = parts.join(' (');
         if (city && parts.length > 1) formattedAddress += ')';
       }
@@ -723,7 +1162,7 @@
       debounceTimer = setTimeout(async () => {
         try {
           const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&accept-language=uk&countrycodes=ua&viewbox=22.13,52.37,40.22,44.38&q=${encodeURIComponent(q)}`;
-          
+
           const res = await fetch(url);
           const data = await res.json();
           currentResults = data || [];
@@ -756,12 +1195,12 @@
       const r = currentResults[idx];
       if (!r) return;
       selectedFromList = true;
-      
+
       const addr = r.address || {};
       const street = addr.road || addr.pedestrian || addr.suburb || r.display_name.split(',')[0];
       const house = addr.house_number ? `, ${addr.house_number}` : '';
       const city = addr.city || addr.town || addr.village ? ` (${addr.city || addr.town || addr.village})` : '';
-      
+
       inputEl.value = `${street}${house}${city}`;
       listEl.classList.remove('show');
       onSelect(parseFloat(r.lat), parseFloat(r.lon));
@@ -805,14 +1244,16 @@
     updateRouteAndMap();
 
     if (accuracy > 100) {
-      showToast(`Локація визначена (погрешність ~${Math.round(accuracy)}м). Перетягніть маркер для точності`, true);
+      showToast(currentLang === 'en'
+        ? `Location found (accuracy ~${Math.round(accuracy)}m). Drag the marker for precision`
+        : `Локація визначена (погрешність ~${Math.round(accuracy)}м). Перетягніть маркер для точності`, true);
     } else {
-      showToast('Геолокацію визначено з високою точністю!');
+      showToast(currentLang === 'en' ? 'Location found with high accuracy!' : 'Геолокацію визначено з високою точністю!');
     }
   }
 
   function getUserLocation() {
-    showToast('Зв\'язок зі супутниками GPS...');
+    showToast(currentLang === 'en' ? 'Connecting to GPS…' : 'Зв\'язок зі супутниками GPS...');
 
     if (tg && tg.LocationManager && tg.LocationManager.isInited && tg.LocationManager.isLocationAvailable) {
       tg.LocationManager.getLocation((data) => {
@@ -830,7 +1271,7 @@
 
   function fallbackWebGeolocation() {
     if (!navigator.geolocation) {
-      showToast('Геолокація не підтримується пристроєм', true);
+      showToast(currentLang === 'en' ? 'Geolocation is not supported on this device' : 'Геолокація не підтримується пристроєм', true);
       return;
     }
 
@@ -843,7 +1284,7 @@
       },
       (err) => {
         if (watchId) navigator.geolocation.clearWatch(watchId);
-        showToast('Увімкніть GPS / Геолокацію в налаштуваннях телефону', true);
+        showToast(currentLang === 'en' ? 'Turn on GPS / Location in your phone settings' : 'Увімкніть GPS / Геолокацію в налаштуваннях телефону', true);
       },
       geoOptions
     );
@@ -859,7 +1300,7 @@
       pointA = { lat, lng, isGps: false };
       document.getElementById('fromAddr').value = addressName;
       clearFieldError('fromAddrField');
-    } else {
+    } else if (tripMode === 'route') {
       pointB = { lat, lng };
       document.getElementById('toAddr').value = addressName;
       clearFieldError('toAddrField');
@@ -875,15 +1316,50 @@
   addStopBtn.addEventListener('click', () => {
     if (viaWrap.style.display === 'none') {
       viaWrap.style.display = 'block';
-      addStopBtn.innerText = '✕ Видалити зупинку';
+      addStopBtn.innerText = t('removeStop');
     } else {
       viaWrap.style.display = 'none';
       document.getElementById('viaAddr').value = '';
       pointVia = null;
-      addStopBtn.innerText = '+ Додати зупинку';
+      addStopBtn.innerText = t('addStop');
       updateRouteAndMap();
     }
   });
+
+  // ---- Швидкі напрямки ----
+  const quickRoutesRow = document.getElementById('quickRoutesRow');
+
+  async function selectQuickRoute(route){
+    showToast(t('searchingRoute'));
+    const res = await geocode(route.query);
+    if (!res) { showToast(t('routeNotFound'), true); return; }
+
+    if (!route.isCity) {
+      tariffType = 'intercity';
+      tariffIntercityBtn.classList.add('active');
+      tariffCityBtn.classList.remove('active');
+    } else {
+      tariffType = 'city';
+      tariffCityBtn.classList.add('active');
+      tariffIntercityBtn.classList.remove('active');
+    }
+
+    document.getElementById('toAddr').value = currentLang === 'en' ? route.en : route.uk;
+    pointB = { lat: res.lat, lng: res.lng };
+    clearFieldError('toAddrField');
+    updateRouteAndMap();
+  }
+
+  function renderQuickRoutes(){
+    quickRoutesRow.innerHTML = '';
+    QUICK_ROUTES.forEach(route => {
+      const chip = document.createElement('span');
+      chip.className = 'fav-chip';
+      chip.textContent = currentLang === 'en' ? route.en : route.uk;
+      chip.addEventListener('click', () => selectQuickRoute(route));
+      quickRoutesRow.appendChild(chip);
+    });
+  }
 
   async function calculateMultiRoute(waypointCoords) {
     if (waypointCoords.length < 2) return;
@@ -919,7 +1395,7 @@
 
         map.fitBounds(routePolyline.getBounds(), { padding: [40, 40] });
 
-        document.getElementById('distText').innerText = 'Маршрут розраховано';
+        document.getElementById('distText').innerText = currentLang === 'en' ? 'Route calculated' : 'Маршрут розраховано';
         document.getElementById('routeDetails').innerText = lastRouteSummary;
         document.getElementById('priceText').innerText = `${totalPrice} ₴`;
       }
@@ -944,7 +1420,7 @@
       });
     }
 
-    if (viaWrap.style.display !== 'none' && pointVia) {
+    if (tripMode === 'route' && viaWrap.style.display !== 'none' && pointVia) {
       activeCoords.push(pointVia);
       let mVia = L.marker([pointVia.lat, pointVia.lng], { draggable: true }).addTo(map);
       markers.push(mVia);
@@ -958,7 +1434,7 @@
       });
     }
 
-    if (pointB) {
+    if (tripMode === 'route' && pointB) {
       activeCoords.push(pointB);
       let mB = L.marker([pointB.lat, pointB.lng], { draggable: true }).addTo(map);
       markers.push(mB);
@@ -970,6 +1446,12 @@
         document.getElementById('toAddr').value = updatedAddr;
         updateRouteAndMap();
       });
+    }
+
+    if (tripMode === 'hourly') {
+      if (activeCoords.length === 1) map.setView([activeCoords[0].lat, activeCoords[0].lng], 16);
+      updateHourlyPriceDisplay();
+      return;
     }
 
     if (activeCoords.length >= 2) {
@@ -1019,10 +1501,16 @@
   function validateForm() {
     let valid = true;
     if (!document.getElementById('fromAddr').value.trim()) { setFieldError('fromAddrField', true); valid = false; }
-    if (!document.getElementById('toAddr').value.trim()) { setFieldError('toAddrField', true); valid = false; }
+    if (tripMode === 'route') {
+      if (!document.getElementById('toAddr').value.trim()) { setFieldError('toAddrField', true); valid = false; }
+    }
     if (!document.getElementById('clientName').value.trim()) { setFieldError('clientNameField', true); valid = false; }
     const phone = document.getElementById('clientPhone').value.trim();
     if (!phone || !isValidPhone(phone)) { setFieldError('clientPhoneField', true); valid = false; }
+    if (scheduleMode === 'later') {
+      const val = document.getElementById('scheduleDateTime').value;
+      if (!val || new Date(val).getTime() < Date.now() - 60000) { setFieldError('scheduleDateField', true); valid = false; }
+    }
     return valid;
   }
 
@@ -1042,7 +1530,7 @@
     document.getElementById('toAddr').value = '';
     document.getElementById('orderComment').value = '';
     viaWrap.style.display = 'none';
-    addStopBtn.innerText = '+ Додати зупинку';
+    addStopBtn.innerText = t('addStop');
     pointA = null; pointB = null; pointVia = null;
 
     ['fromAddrList','viaAddrList','toAddrList'].forEach(id => {
@@ -1053,6 +1541,20 @@
     tariffType = 'city';
     tariffCityBtn.classList.add('active');
     tariffIntercityBtn.classList.remove('active');
+
+    setTripMode('route');
+
+    scheduleMode = 'now';
+    scheduleNowBtn.classList.add('active');
+    scheduleLaterBtn.classList.remove('active');
+    scheduleDateField.style.display = 'none';
+    scheduleDateTimeInput.value = '';
+
+    hourlyHours = HOURLY_MIN_HOURS;
+    hourlyChips.forEach(b => b.classList.toggle('active', parseInt(b.dataset.hours,10) === HOURLY_MIN_HOURS));
+
+    childSeat = false;
+    document.getElementById('childSeatCheckbox').checked = false;
 
     paymentMethod = 'cash';
     payCashBtn.classList.add('active');
@@ -1067,43 +1569,54 @@
 
   submitBtn.addEventListener('click', async () => {
     if (!validateForm()) {
-      showToast('Заповніть обов’язкові поля', true);
+      showToast(t('validationError'), true);
       return;
     }
 
     const orderId = 'APX-' + Math.floor(100000 + Math.random() * 900000);
 
-    const tariffLabel = tariffType === 'intercity' ? 'Межгород / за містом' : 'По місту';
+    const tariffLabel = tripMode === 'hourly'
+      ? `Погодинний найм · ${hourlyHours} год`
+      : (tariffType === 'intercity' ? 'Межгород / за містом' : 'По місту');
     const paymentLabel = paymentMethod === 'card' ? 'Переказ на карту' : 'Готівка водію';
+    const whenLabel = scheduleMode === 'later'
+      ? new Date(scheduleDateTimeInput.value).toLocaleString('uk-UA')
+      : 'Найближчим часом';
+
+    const price = tripMode === 'hourly' ? computeHourlyPrice(hourlyHours) : lastCalculatedPrice;
+    const summary = tripMode === 'hourly' ? `${hourlyHours} год оренди авто з водієм` : lastRouteSummary;
 
     const order = {
       id: orderId,
-      mode: 'За маршрутом',
+      mode: tripMode === 'hourly' ? 'Погодинний найм' : 'За маршрутом',
       tariff: tariffLabel,
       payment: paymentLabel,
+      when: whenLabel,
       from: document.getElementById('fromAddr').value.trim(),
-      via: (viaWrap.style.display !== 'none') ? document.getElementById('viaAddr').value.trim() : null,
-      to: document.getElementById('toAddr').value.trim(),
+      via: (tripMode === 'route' && viaWrap.style.display !== 'none') ? document.getElementById('viaAddr').value.trim() : null,
+      to: tripMode === 'route' ? document.getElementById('toAddr').value.trim() : null,
       passengers: selectedPassengers,
+      childSeat: childSeat,
       comment: document.getElementById('orderComment').value.trim(),
       clientName: document.getElementById('clientName').value.trim(),
       clientPhone: document.getElementById('clientPhone').value.trim(),
-      price: lastCalculatedPrice,
-      summary: lastRouteSummary
+      price: price,
+      summary: summary
     };
 
     saveUserData(order.clientName, order.clientPhone);
 
     submitBtn.disabled = true;
-    submitBtn.innerText = 'Оформлення...';
+    submitBtn.innerText = currentLang === 'en' ? 'Placing order...' : 'Оформлення...';
 
     const clientChatId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : null;
 
     let textDisp = `🚘 <b>НОВЕ ЗАМОВЛЕННЯ ${order.id}</b>\n\n`;
     textDisp += `👤 <b>Клієнт:</b> ${order.clientName}\n`;
     textDisp += `📞 <b>Телефон:</b> ${order.clientPhone}\n`;
-    textDisp += `👨‍👩‍👧‍👦 <b>Пасажири:</b> ${order.passengers} дорос.\n`;
+    textDisp += `👨‍👩‍👧‍👦 <b>Пасажири:</b> ${order.passengers} дорос.${order.childSeat ? ' + дитяче крісло' : ''}\n`;
     textDisp += `📍 <b>Тип:</b> ${order.mode}\n`;
+    textDisp += `⏰ <b>Час подачі:</b> ${order.when}\n`;
     textDisp += `💲 <b>Тариф:</b> ${order.tariff}\n`;
     textDisp += `📍 <b>Звідки:</b> ${order.from}\n`;
     if (order.via) textDisp += `🛑 <b>Зупинка:</b> ${order.via}\n`;
@@ -1121,8 +1634,9 @@
     }
 
     let textClient = `✅ <b>Ваше замовлення ${order.id} прийнято!</b>\n\n`;
-    textClient += `📍 <b>Маршрут:</b> ${order.from} → ${order.to}\n`;
-    textClient += `👨‍👩‍👧‍👦 <b>Пасажири:</b> ${order.passengers} дорос.\n`;
+    textClient += `📍 <b>Тип:</b> ${order.mode}${order.to ? ` · ${order.from} → ${order.to}` : ` · ${order.from}`}\n`;
+    textClient += `⏰ <b>Час подачі:</b> ${order.when}\n`;
+    textClient += `👨‍👩‍👧‍👦 <b>Пасажири:</b> ${order.passengers} дорос.${order.childSeat ? ' + дитяче крісло' : ''}\n`;
     textClient += `💰 <b>Вартість:</b> ${order.price} ₴\n`;
     textClient += `💳 <b>Оплата:</b> ${order.payment}\n`;
     if (order.payment === 'Переказ на карту') {
@@ -1140,22 +1654,52 @@
         await sendTelegramMessage(clientChatId, textClient);
       }
 
-      showToast('Замовлення успішно надіслано!');
+      showToast(currentLang === 'en' ? 'Order sent successfully!' : 'Замовлення успішно надіслано!');
 
       setTimeout(() => {
         resetFormAfterOrder();
         submitBtn.disabled = false;
-        submitBtn.innerText = 'Замовити Apex';
+        submitBtn.innerText = t('submitBtn');
         if (tg) tg.close();
       }, 1500);
 
     } catch (err) {
       console.error(err);
-      showToast('Помилка відправки', true);
+      showToast(currentLang === 'en' ? 'Sending failed' : 'Помилка відправки', true);
       submitBtn.disabled = false;
-      submitBtn.innerText = 'Замовити Apex';
+      submitBtn.innerText = t('submitBtn');
     }
   });
+
+  // ---- Мова інтерфейсу ----
+  const langToggleBtn = document.getElementById('langToggleBtn');
+
+  function applyLanguage(){
+    document.documentElement.lang = currentLang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (I18N[currentLang] && I18N[currentLang][key] !== undefined) el.innerHTML = I18N[currentLang][key];
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+      const key = el.getAttribute('data-i18n-ph');
+      if (I18N[currentLang] && I18N[currentLang][key] !== undefined) el.setAttribute('placeholder', I18N[currentLang][key]);
+    });
+    document.getElementById('distText').innerText = lastDistanceKm != null || tripMode === 'hourly'
+      ? document.getElementById('distText').innerText
+      : t('distTextDefault');
+  }
+
+  langToggleBtn.addEventListener('click', () => {
+    currentLang = currentLang === 'uk' ? 'en' : 'uk';
+    langToggleBtn.textContent = currentLang === 'uk' ? 'EN' : 'UA';
+    applyLanguage();
+    renderQuickRoutes();
+    if (tripMode === 'hourly') updateHourlyPriceDisplay();
+  });
+
+  // ---- Ініціалізація ----
+  renderQuickRoutes();
+  resetCalculatedState();
 })();
 </script>
 </body>
