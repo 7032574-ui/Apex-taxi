@@ -206,7 +206,6 @@
   .fav-chip.geo-chip {
     border-color: rgba(212,175,55,0.4); color: var(--gold-2); background: rgba(212,175,55,0.08);
   }
-  .quick-routes-label{ font-size:11px; color: var(--text-muted); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 1px; }
 
   .add-stop-btn {
     background: none; border: none; color: var(--gold-2);
@@ -317,7 +316,7 @@
 
   <div class="about-card">
     <p class="about-title" data-i18n="aboutTitle">Перше преміальне електротаксі Умані</p>
-    <p class="about-body" data-i18n="aboutBody">Один автомобіль — один водій. Це не парк, а особистий сервіс: BYD Han 2022 у максимальній комплектації, безшумний хід без вихлопу, клімат-контроль і Wi-Fi у салоні. Працюємо по місту, за напрямками Київ / Черкаси / Вінниця та надаємо авто з водієм на години.</p>
+    <p class="about-body" data-i18n="aboutBody">Один автомобіль — один водій. Це не парк, а особистий сервіс: BYD Han 2022 у максимальній комплектації, безшумний хід без вихлопу, клімат-контроль і Wi-Fi у салоні. Працюємо по місту, за напрямками Київ, Черкаси, Одеса, Вінниця та інші, а також надаємо авто з водієм на години.</p>
   </div>
 
   <div class="perks-strip">
@@ -397,9 +396,6 @@
     </div>
 
     <div id="routeOnlyFields">
-      <p class="quick-routes-label" data-i18n="quickRoutesLabel">Швидкі напрямки</p>
-      <div class="fav-chips" id="quickRoutesRow"></div>
-
       <div id="viaWrap" class="field" style="display:none;">
         <label class="field-label" for="viaAddr" data-i18n="viaLabel">Зупинка (Точка Б)</label>
         <input type="text" id="viaAddr" data-i18n-ph="viaPh" placeholder="Проміжна адреса" autocomplete="off">
@@ -527,7 +523,7 @@
       ecoBadge: '100% ЕЛЕКТРО',
       driverRole: "Ваш водій · BYD Han 2022 Premium",
       aboutTitle: 'Перше преміальне електротаксі Умані',
-      aboutBody: "Один автомобіль — один водій. Це не парк, а особистий сервіс: BYD Han 2022 у максимальній комплектації, безшумний хід без вихлопу, клімат-контроль і Wi-Fi у салоні. Працюємо по місту, за напрямками Київ / Черкаси / Вінниця та надаємо авто з водієм на години.",
+      aboutBody: "Один автомобіль — один водій. Це не парк, а особистий сервіс: BYD Han 2022 у максимальній комплектації, безшумний хід без вихлопу, клімат-контроль і Wi-Fi у салоні. Працюємо по місту, за напрямками Київ, Черкаси, Одеса, Вінниця та інші, а також надаємо авто з водієм на години.",
       perk1: '🔋 Тихий електромобіль — без запаху палива і вихлопу',
       perk2: '🚘 Єдине авто — завжди Ви і Ваш водій, без лотереї',
       perk3: '🤝 Договори на щомісячне обслуговування для бізнесу',
@@ -550,7 +546,6 @@
       geoChip: '🎯 Моя геопозиція',
       fromLabel: 'Звідки (Точка А)',
       fromPh: "Місто, вулиця, будинок...",
-      quickRoutesLabel: 'Швидкі напрямки',
       viaLabel: 'Зупинка (Точка Б)',
       viaPh: 'Проміжна адреса',
       addStop: '+ Додати зупинку (+50 ₴)',
@@ -587,7 +582,7 @@
       ecoBadge: '100% ELECTRIC',
       driverRole: 'Your driver · BYD Han 2022 Premium',
       aboutTitle: "Uman's first premium electric taxi",
-      aboutBody: "One car, one driver — not a fleet, a personal service: a fully-loaded BYD Han 2022, silent and exhaust-free, climate control and in-car Wi-Fi. We cover the city, routes to Kyiv / Cherkasy / Vinnytsia, and hourly hire with a driver.",
+      aboutBody: "One car, one driver — not a fleet, a personal service: a fully-loaded BYD Han 2022, silent and exhaust-free, climate control and in-car Wi-Fi. We cover the city, routes to Kyiv, Cherkasy, Odesa, Vinnytsia and beyond, and hourly hire with a driver.",
       perk1: '🔋 Silent electric car — no fuel smell, no exhaust',
       perk2: '🚘 One car only — always the same car and driver',
       perk3: '🤝 Monthly service contracts for businesses',
@@ -610,7 +605,6 @@
       geoChip: '🎯 My location',
       fromLabel: 'From (Point A)',
       fromPh: 'City, street, building...',
-      quickRoutesLabel: 'Quick destinations',
       viaLabel: 'Stop (Point B)',
       viaPh: 'Intermediate address',
       addStop: '+ Add a stop (+50 UAH)',
@@ -643,14 +637,6 @@
       hourlyModeLabel: 'Hourly hire'
     }
   };
-
-  const QUICK_ROUTES = [
-    { key:'boryspil',  uk:'✈️ Бориспіль',  en:'✈️ Boryspil',        query:'Аеропорт Бориспіль, Київська область', isCity:false },
-    { key:'zhulyany',  uk:'✈️ Жуляни',     en:'✈️ Zhuliany',        query:'Аеропорт Жуляни, Київ', isCity:false },
-    { key:'sofiyivka', uk:'🌳 Софіївка',   en:'🌳 Sofiyivka Park',  query:'Дендрологічний парк Софіївка, Умань', isCity:true },
-    { key:'cherkasy',  uk:'🏙 Черкаси',    en:'🏙 Cherkasy',        query:'Черкаси', isCity:false },
-    { key:'vinnytsia', uk:'🏙 Вінниця',    en:'🏙 Vinnytsia',       query:'Вінниця', isCity:false }
-  ];
 
   let currentLang = 'uk';
   function t(key){ return (I18N[currentLang] && I18N[currentLang][key] !== undefined) ? I18N[currentLang][key] : key; }
@@ -1326,41 +1312,6 @@
     }
   });
 
-  // ---- Швидкі напрямки ----
-  const quickRoutesRow = document.getElementById('quickRoutesRow');
-
-  async function selectQuickRoute(route){
-    showToast(t('searchingRoute'));
-    const res = await geocode(route.query);
-    if (!res) { showToast(t('routeNotFound'), true); return; }
-
-    if (!route.isCity) {
-      tariffType = 'intercity';
-      tariffIntercityBtn.classList.add('active');
-      tariffCityBtn.classList.remove('active');
-    } else {
-      tariffType = 'city';
-      tariffCityBtn.classList.add('active');
-      tariffIntercityBtn.classList.remove('active');
-    }
-
-    document.getElementById('toAddr').value = currentLang === 'en' ? route.en : route.uk;
-    pointB = { lat: res.lat, lng: res.lng };
-    clearFieldError('toAddrField');
-    updateRouteAndMap();
-  }
-
-  function renderQuickRoutes(){
-    quickRoutesRow.innerHTML = '';
-    QUICK_ROUTES.forEach(route => {
-      const chip = document.createElement('span');
-      chip.className = 'fav-chip';
-      chip.textContent = currentLang === 'en' ? route.en : route.uk;
-      chip.addEventListener('click', () => selectQuickRoute(route));
-      quickRoutesRow.appendChild(chip);
-    });
-  }
-
   async function calculateMultiRoute(waypointCoords) {
     if (waypointCoords.length < 2) return;
 
@@ -1693,12 +1644,10 @@
     currentLang = currentLang === 'uk' ? 'en' : 'uk';
     langToggleBtn.textContent = currentLang === 'uk' ? 'EN' : 'UA';
     applyLanguage();
-    renderQuickRoutes();
     if (tripMode === 'hourly') updateHourlyPriceDisplay();
   });
 
   // ---- Ініціалізація ----
-  renderQuickRoutes();
   resetCalculatedState();
 })();
 </script>
