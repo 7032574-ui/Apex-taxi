@@ -5,21 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>APEX TAXI UMAN</title>
   
-  <!-- OG-теги для Facebook/Instagram -->
+  <!-- Метаданные для Meta (Facebook/Instagram) -->
+  <meta property="og:site_name" content="7032574-ui.github.io">
   <meta property="og:title" content="APEX TAXI UMAN">
-  <meta property="og:description" content="Онлайн бронирование трансфера">
+  <meta property="og:description" content="Преміальне електотаксі в Умані. Онлайн замовлення">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://7032574-ui.github.io/Apex-taxi/go/">
 
   <script>
-    // Задержка 500мс, чтобы Meta успела прочитать метаданные страницы
-    setTimeout(function() {
+    // Редирект только для обычных пользователей (не бота Meta)
+    if (!navigator.userAgent.includes("facebookexternalhit") && !navigator.userAgent.includes("Facebot")) {
       window.location.href = "https://t.me/Apex_vip_transfer_uman_bot/apex_app";
-    }, 500);
+    }
   </script>
 </head>
-<body>
-  <p style="font-family: sans-serif; text-align: center; margin-top: 50px;">
-    Переход к бронированию... <a href="https://t.me/Apex_vip_transfer_uman_bot/apex_app">Нажмите здесь</a>, если переход не произошел автоматически.
-  </p>
+<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+  <h2>APEX TAXI UMAN</h2>
+  <p>Перехід до бронування...</p>
+  <a href="https://t.me/Apex_vip_transfer_uman_bot/apex_app" style="display:inline-block; padding:10px 20px; background:#000; color:#fff; text-decoration:none; border-radius:5px;">Забронювати в Telegram</a>
 </body>
 </html>
