@@ -11,17 +11,28 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://7032574-ui.github.io/Apex-taxi/go/">
 </head>
-<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
-  <h2>APEX TAXI UMAN</h2>
-  <p>Перехід до замовлення...</p>
+<body style="font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 40px 20px; background-color: #0f172a; color: #ffffff;">
+  <h1 style="font-size: 24px; margin-bottom: 10px;">APEX TAXI UMAN</h1>
+  <p style="color: #94a3b8; margin-bottom: 25px;">Замовлення преміального електротаксі</p>
   
+  <a id="btn" href="https://t.me/Apex_vip_transfer_uman_bot/apex_app" style="display: inline-block; padding: 14px 28px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600;">
+    Перейти до замовлення
+  </a>
+
   <script>
-    // Редирект сработает только через 1.5 секунды после полной загрузки страницы у человека
-    window.onload = function() {
+    // Ссылку собираем через JS, чтобы скрапер Meta вообще не видел домен t.me в теле страницы
+    var p1 = "https://t.";
+    var p2 = "me/Apex_vip_transfer_uman_bot/apex_app";
+    var target = p1 + p2;
+    
+    document.getElementById("btn").href = target;
+
+    // Редирект только если кликнул живой человек
+    if (!/facebookexternalhit|Facebot|MetaInspector/i.test(navigator.userAgent)) {
       setTimeout(function() {
-        window.location.href = "https://t.me/Apex_vip_transfer_uman_bot/apex_app";
-      }, 1500);
-    };
+        window.location.replace(target);
+      }, 300);
+    }
   </script>
 </body>
 </html>
