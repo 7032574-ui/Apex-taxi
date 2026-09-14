@@ -56,40 +56,7 @@
   }
   .lang-toggle-btn:active{ transform: scale(0.95); }
 
-  /* DRIVER CARD */
-  .driver-card{
-    display:flex; align-items:center; gap:12px;
-    background: var(--bg-card); border:1px solid var(--border-soft); border-radius: var(--radius-md);
-    padding:12px 14px; margin-bottom:14px; margin-top:12px;
-  }
-  .driver-avatar{
-    width:42px; height:42px; border-radius:50%; background: rgba(212,175,55,0.15);
-    display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;
-    border:1px solid rgba(212,175,55,0.3);
-  }
-  .driver-meta{ flex:1; }
-  .driver-name{ font-size:14px; font-weight:700; color:#fff; }
-  .driver-role{ font-size:11px; color: var(--text-muted); margin-top:2px; }
-  .eco-badge{
-    font-size: 10px; font-weight: 700; color: var(--green); background: rgba(76,175,110,0.12);
-    border: 1px solid rgba(76,175,110,0.35); border-radius: 100px; padding: 4px 9px; white-space: nowrap;
-  }
 
-  /* ABOUT CARD */
-  .about-card{
-    background: var(--bg-card); border:1px solid var(--border-soft); border-radius: var(--radius-md);
-    padding:14px 16px; margin-bottom:14px;
-  }
-  .about-title{ font-size:14px; font-weight:700; color: var(--gold-2); margin:0 0 6px; }
-  .about-body{ font-size:12.5px; color: var(--text-muted); line-height:1.5; margin:0; }
-
-  .perks-strip{
-    display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:16px;
-  }
-  .perk-item{
-    background: rgba(255,255,255,0.02); border:1px solid var(--border-soft); border-radius: var(--radius-sm);
-    padding:9px 10px; font-size:11.5px; color: var(--platinum); line-height:1.4;
-  }
 
   /* MAP BLOCK */
   .map-card {
@@ -129,6 +96,21 @@
   .tariff-info-line{
     font-size: 11.5px; color: var(--text-muted); margin: 0 0 18px; padding: 0 2px; line-height:1.5;
   }
+
+  .tariff-auto-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-bottom: 16px;
+  }
+  .tariff-auto-badge{
+    font-size: 12px; font-weight: 700; color: var(--gold-2);
+    background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.35);
+    border-radius: 100px; padding: 7px 15px;
+  }
+  .tariff-info-link{
+    font-size: 11.5px; color: var(--text-muted); cursor: pointer;
+    text-decoration: underline dotted; text-underline-offset: 3px;
+  }
+  .tariff-info-link:active{ opacity: 0.7; }
 
   /* FORM */
   .form-card{
@@ -237,13 +219,7 @@
   }
   .copy-card-btn:active{ transform: scale(0.96); }
 
-  /* CORPORATE + FOOTER */
-  .corporate-note{
-    background: rgba(212,175,55,0.05); border: 1px dashed rgba(212,175,55,0.35);
-    border-radius: var(--radius-md); padding: 13px 15px; margin-bottom: 16px;
-    font-size: 12.5px; color: var(--platinum); line-height: 1.5;
-  }
-  .corporate-note b{ color: var(--gold-2); }
+  /* FOOTER */
 
   .footer-info{
     text-align:center; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-soft);
@@ -305,27 +281,6 @@
     <p class="tagline" data-i18n="tagline">Reach the top</p>
   </div>
 
-  <div class="driver-card">
-    <div class="driver-avatar">🚖</div>
-    <div class="driver-meta">
-      <div class="driver-name">Максим</div>
-      <div class="driver-role" data-i18n="driverRole">Ваш водій · BYD Han 2022 Premium</div>
-    </div>
-    <div class="eco-badge" data-i18n="ecoBadge">100% ЕЛЕКТРО</div>
-  </div>
-
-  <div class="about-card">
-    <p class="about-title" data-i18n="aboutTitle">Перше преміальне електротаксі Умані</p>
-    <p class="about-body" data-i18n="aboutBody">Один автомобіль — один водій. Це не парк, а особистий сервіс: BYD Han 2022 у максимальній комплектації, безшумний хід без вихлопу, клімат-контроль і Wi-Fi у салоні. Працюємо по місту, за напрямками Київ, Черкаси, Одеса, Вінниця та інші, а також надаємо авто з водієм на години.</p>
-  </div>
-
-  <div class="perks-strip">
-    <div class="perk-item" data-i18n="perk1">🔋 Тихий електромобіль — без запаху палива і вихлопу</div>
-    <div class="perk-item" data-i18n="perk2">🚘 Єдине авто — завжди Ви і Ваш водій, без лотереї</div>
-    <div class="perk-item" data-i18n="perk3">🤝 Договори на щомісячне обслуговування для бізнесу</div>
-    <div class="perk-item" data-i18n="perk4">👶 Дитяче крісло за запитом — безкоштовно</div>
-  </div>
-
   <div class="map-card" id="mapCard">
     <div class="map-controls">
       <button type="button" class="map-ctrl-btn" id="toggleSatelliteBtn">🛰️ Спутник</button>
@@ -349,13 +304,9 @@
       <div class="mode-btn" id="tripModeHourlyBtn" data-i18n="modeHourly">🕐 Погодинно</div>
     </div>
 
-    <div id="routeOnlyTariff">
-      <p class="section-title" data-i18n="tariffTitle">Тариф поїздки</p>
-      <div class="mode-toggle" id="tariffToggle">
-        <div class="mode-btn active" id="tariffCityBtn" data-i18n="tariffCity">🏙 По місту</div>
-        <div class="mode-btn" id="tariffIntercityBtn" data-i18n="tariffIntercity">🛣 Межгород / за містом</div>
-      </div>
-      <p class="tariff-info-line" id="tariffInfoLine" data-i18n="tariffInfoLine">Подача 200 ₴ + від 20 ₴/км · мінімальний чек 350 ₴ · безкоштовне очікування 7 хв · ніч (23:00–06:00) +20%</p>
+    <div id="routeOnlyTariff" class="tariff-auto-row">
+      <span class="tariff-auto-badge" id="tariffAutoBadge">🏙 По місту</span>
+      <span class="tariff-info-link" id="tariffInfoIcon" data-i18n="tariffDetailsLink">Деталі тарифу</span>
     </div>
 
     <div id="hourlyOnlyTariff" style="display:none;">
@@ -456,10 +407,6 @@
       <div class="payment-card-name">Отримувач: Максим Б.</div>
       <button type="button" class="copy-card-btn" id="copyCardBtn" data-i18n="copyCardBtn">📋 Скопіювати номер картки</button>
     </div>
-
-    <div class="corporate-note" data-i18n="corporateNote" style="margin-top:20px;">
-      🤝 <b>Для компаній:</b> укладаємо договір на щомісячне обслуговування — регулярні трансфери співробітників, зустріч гостей, поїздки керівництва. Дзвоніть диспетчеру, щоб обговорити умови.
-    </div>
   </form>
 
   <button type="button" class="submit-btn" id="submitBtn" data-i18n="submitBtn">Замовити Apex</button>
@@ -522,6 +469,7 @@
       tagline: 'Reach the top',
       ecoBadge: '100% ЕЛЕКТРО',
       driverRole: "Ваш водій · BYD Han 2022 Premium",
+      aboutToggleLine: 'BYD Han 2022 · 100% електро',
       aboutTitle: 'Перше преміальне електротаксі Умані',
       aboutBody: "Один автомобіль — один водій. Це не парк, а особистий сервіс: BYD Han 2022 у максимальній комплектації, безшумний хід без вихлопу, клімат-контроль і Wi-Fi у салоні. Працюємо по місту, за напрямками Київ, Черкаси, Одеса, Вінниця та інші, а також надаємо авто з водієм на години.",
       perk1: '🔋 Тихий електромобіль — без запаху палива і вихлопу',
@@ -534,8 +482,9 @@
       modeHourly: '🕐 Погодинно',
       tariffTitle: 'Тариф поїздки',
       tariffCity: '🏙 По місту',
-      tariffIntercity: '🛣 Межгород / за містом',
+      tariffIntercity: '🛣 Міжмісто / за містом',
       tariffInfoLine: 'Подача 200 ₴ + від 20 ₴/км · мінімальний чек 350 ₴ · безкоштовне очікування 7 хв · ніч (23:00–06:00) +20%',
+      tariffDetailsLink: 'Деталі тарифу',
       hourlyTitle: 'Погодинний найм авто з водієм',
       hourlyInfoLine: '900 ₴/год, мінімум 2 години · для ділових зустрічей, екскурсій, подій',
       scheduleTitle: 'Час подачі',
@@ -581,6 +530,7 @@
       tagline: 'Reach the top',
       ecoBadge: '100% ELECTRIC',
       driverRole: 'Your driver · BYD Han 2022 Premium',
+      aboutToggleLine: 'BYD Han 2022 · 100% electric',
       aboutTitle: "Uman's first premium electric taxi",
       aboutBody: "One car, one driver — not a fleet, a personal service: a fully-loaded BYD Han 2022, silent and exhaust-free, climate control and in-car Wi-Fi. We cover the city, routes to Kyiv, Cherkasy, Odesa, Vinnytsia and beyond, and hourly hire with a driver.",
       perk1: '🔋 Silent electric car — no fuel smell, no exhaust',
@@ -595,6 +545,7 @@
       tariffCity: '🏙 In city',
       tariffIntercity: '🛣 Out of town / intercity',
       tariffInfoLine: 'Pickup 200 UAH + from 20 UAH/km · minimum fare 350 UAH · 7 min free waiting · night (23:00–06:00) +20%',
+      tariffDetailsLink: 'Tariff details',
       hourlyTitle: 'Hourly hire with driver',
       hourlyInfoLine: '900 UAH/hour, 2-hour minimum · for meetings, sightseeing, events',
       scheduleTitle: 'Pickup time',
@@ -902,24 +853,20 @@
      <p style="color:var(--text-muted); font-size:12px;">Підходить для ділових зустрічей, екскурсій містом, весіль і подій з кількома зупинками.</p>`;
   }
 
-  // ---- Перемикач тарифу та виклики інфо-вікон ----
-  const tariffCityBtn = document.getElementById('tariffCityBtn');
-  const tariffIntercityBtn = document.getElementById('tariffIntercityBtn');
+  // ---- Тариф визначається автоматично за відстанню (компактний бейдж + деталі за тапом) ----
+  const tariffAutoBadge = document.getElementById('tariffAutoBadge');
+  const tariffInfoIcon = document.getElementById('tariffInfoIcon');
 
-  tariffCityBtn.addEventListener('click', () => {
-    tariffType = 'city';
-    tariffCityBtn.classList.add('active');
-    tariffIntercityBtn.classList.remove('active');
-    recalcCurrentPrice();
-    openTariffModal(currentLang === 'en' ? '🏙 "In City" rate' : '🏙 Тариф «По місту»', cityModalHtml());
-  });
+  function updateTariffBadge(){
+    tariffAutoBadge.textContent = t(tariffType === 'intercity' ? 'tariffIntercity' : 'tariffCity');
+  }
 
-  tariffIntercityBtn.addEventListener('click', () => {
-    tariffType = 'intercity';
-    tariffIntercityBtn.classList.add('active');
-    tariffCityBtn.classList.remove('active');
-    recalcCurrentPrice();
-    openTariffModal(currentLang === 'en' ? '🛣 Intercity rate' : '🛣 Тариф «Межгород / за містом»', intercityModalHtml());
+  tariffInfoIcon.addEventListener('click', () => {
+    if (tariffType === 'intercity') {
+      openTariffModal(currentLang === 'en' ? '🛣 Intercity rate' : '🛣 Тариф «Міжмісто / за містом»', intercityModalHtml());
+    } else {
+      openTariffModal(currentLang === 'en' ? '🏙 "In City" rate' : '🏙 Тариф «По місту»', cityModalHtml());
+    }
   });
 
   document.getElementById('hourlyInfoIcon').addEventListener('click', () => {
@@ -1329,8 +1276,7 @@
 
         if (distanceKm > 25 && tariffType !== 'intercity') {
           tariffType = 'intercity';
-          tariffIntercityBtn.classList.add('active');
-          tariffCityBtn.classList.remove('active');
+          updateTariffBadge();
         }
 
         const totalPrice = computeDistancePrice(distanceKm);
@@ -1490,8 +1436,7 @@
     });
 
     tariffType = 'city';
-    tariffCityBtn.classList.add('active');
-    tariffIntercityBtn.classList.remove('active');
+    updateTariffBadge();
 
     setTripMode('route');
 
@@ -1528,7 +1473,7 @@
 
     const tariffLabel = tripMode === 'hourly'
       ? `Погодинний найм · ${hourlyHours} год`
-      : (tariffType === 'intercity' ? 'Межгород / за містом' : 'По місту');
+      : (tariffType === 'intercity' ? 'Міжмісто / за містом' : 'По місту');
     const paymentLabel = paymentMethod === 'card' ? 'Переказ на карту' : 'Готівка водію';
     const whenLabel = scheduleMode === 'later'
       ? new Date(scheduleDateTimeInput.value).toLocaleString('uk-UA')
@@ -1644,10 +1589,12 @@
     currentLang = currentLang === 'uk' ? 'en' : 'uk';
     langToggleBtn.textContent = currentLang === 'uk' ? 'EN' : 'UA';
     applyLanguage();
+    updateTariffBadge();
     if (tripMode === 'hourly') updateHourlyPriceDisplay();
   });
 
   // ---- Ініціалізація ----
+  updateTariffBadge();
   resetCalculatedState();
 })();
 </script>
