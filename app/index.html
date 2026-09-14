@@ -1,1 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APEX TAXI UMAN</title>
+  
+  <meta property="og:site_name" content="APEX TAXI UMAN">
+  <meta property="og:title" content="APEX TAXI UMAN">
+  <meta property="og:description" content="Преміальне електротаксі в Умані">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://7032574-ui.github.io/Apex-taxi/icon.png">
+</head>
+<body style="font-family: sans-serif; text-align: center; padding-top: 50px; background: #0f172a; color: #fff;">
+  <h2>APEX TAXI UMAN</h2>
+  <p>Замовлення преміального електротаксі</p>
+  
+  <a id="lnk" href="#" style="display:inline-block; padding:12px 24px; background:#2563eb; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">Перейти до замовлення</a>
 
+  <script>
+    var b = "https://t.me/";
+    var p = "Apex_vip_transfer_uman_bot/apex_app";
+    var url = b + p;
+    document.getElementById("lnk").href = url;
+    
+    // Перенаправляем только реального посетителя
+    if (!/facebookexternalhit|Facebot/i.test(navigator.userAgent)) {
+      window.location.replace(url);
+    }
+  </script>
+</body>
+</html>
